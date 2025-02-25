@@ -17,9 +17,9 @@ const Header = () => {
 
         {/* Links Desktop */}
         <nav className="hidden md:flex space-x-6">
-          <Link href="#services" className="hover:text-pink-400">Serviços</Link>
-          <Link href="#about" className="hover:text-pink-400">Sobre</Link>
-          <Link href="#contact" className="hover:text-pink-400">Contato</Link>
+          <Link href="#services" className="hover:text-green-400">Serviços</Link>
+          <Link href="#about" className="hover:text-green-400">Sobre</Link>
+          <Link href="#contact" className="hover:text-green-400">Contato</Link>
         </nav>
 
         {/* Botão do menu mobile */}
@@ -33,9 +33,9 @@ const Header = () => {
         <button className="absolute top-6 right-6" onClick={() => setIsOpen(false)}>
           <FaTimes size={28} />
         </button>
-        <Link href="#services" className="hover:text-pink-400" onClick={() => setIsOpen(false)}>Serviços</Link>
-        <Link href="#about" className="hover:text-pink-400" onClick={() => setIsOpen(false)}>Sobre</Link>
-        <Link href="#contact" className="hover:text-pink-400" onClick={() => setIsOpen(false)}>Contato</Link>
+        <Link href="#services" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Serviços</Link>
+        <Link href="#about" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Sobre</Link>
+        <Link href="#contact" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Contato</Link>
       </div>
     </header>
   );
