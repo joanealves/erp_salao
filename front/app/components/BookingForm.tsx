@@ -42,7 +42,7 @@ const BookingForm = () => {
     fetchServices();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -50,21 +50,25 @@ const BookingForm = () => {
     try {
       let clientId: number;
 
-      // Verificar se o cliente já existe
+      // Verificar se o cliente já existe pelo telefone
       const { data: existingClients, error: clientError } = await supabase
         .from("clients")
-        .select("id")
+        .select("id, email") // Buscar também o e-mail salvo
         .eq("phone", phone)
         .limit(1);
 
       if (clientError) throw clientError;
 
       if (existingClients && existingClients.length > 0) {
-        // Cliente existe, atualize os dados
+        // Cliente já existe, pegar o ID
         clientId = existingClients[0].id;
-        await supabase.from("clients").update({ name, email }).eq("id", clientId);
+
+        // Atualizar o nome e email APENAS se o email for diferente
+        if (existingClients[0].email !== email) {
+          await supabase.from("clients").update({ name, email }).eq("id", clientId);
+        }
       } else {
-        // Cliente não existe, crie um novo
+        // Cliente não existe, criar um novo
         const { data: newClient, error: createError } = await supabase
           .from("clients")
           .insert([{ name, phone, email }])
@@ -82,7 +86,8 @@ const BookingForm = () => {
           date,
           time,
           client_id: clientId,
-          status: "pendente", 
+          name, // Caso ainda esteja na tabela
+          status: "pendente",
         },
       ]);
 
@@ -96,6 +101,7 @@ const BookingForm = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <section className="py-16 bg-gray-100">

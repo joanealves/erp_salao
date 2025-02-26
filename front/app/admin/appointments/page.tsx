@@ -1,4 +1,3 @@
-// app/admin/appointments/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -28,7 +27,12 @@ import {
 } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Search, Filter, Check, X, Clock } from "lucide-react";
+import { Calendar, Search, Filter, Check, X, Clock, AlertCircle } from "lucide-react";
+import { toast, Toaster } from 'sonner'
+import axios from "axios";
+import NewAppointmentModal from "../../components/NewAppointmentModal";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type Appointment = {
   id: number;
@@ -38,6 +42,8 @@ type Appointment = {
   date: string;
   time: string;
   status: string;
+  client_id: number;
+  created_at: string;
 };
 
 export default function AppointmentsPage() {
@@ -46,97 +52,73 @@ export default function AppointmentsPage() {
   const [filter, setFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
+
+  const fetchAppointments = async () => {
+  try {
+    setLoading(true);
+    let url = `${API_URL}/appointments?page=${page}&limit=10`;
+
+    if (filter !== "all") {
+      url += `&status=${filter}`;
+    }
+
+    if (dateFilter) {
+      url += `&date=${dateFilter}`;
+    }
+
+    if (searchQuery) {
+      url += `&search=${searchQuery}`;
+    }
+
+    const response = await axios.get(url);
+    setAppointments(response.data.items || []);
+    setTotalPages(response.data.total_pages || 1);
+    setLoading(false);
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    toast.error("Erro ao carregar agendamentos. Não foi possível buscar os agendamentos. Tente novamente.");
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
-    // In a real app, fetch from your API
-    const fetchAppointments = async () => {
-      try {
-        // const response = await fetch('http://localhost:8000/appointments');
-        // const data = await response.json();
-        
-        // Mock data for now
-        setAppointments([
-          {
-            id: 1,
-            name: "Maria Silva",
-            phone: "(11) 98765-4321",
-            service: "Corte de Cabelo",
-            date: "2025-02-25",
-            time: "14:30",
-            status: "pending"
-          },
-          {
-            id: 2,
-            name: "João Pereira",
-            phone: "(11) 91234-5678",
-            service: "Coloração",
-            date: "2025-02-25",
-            time: "16:00",
-            status: "confirmed"
-          },
-          {
-            id: 3,
-            name: "Ana Souza",
-            phone: "(11) 99876-5432",
-            service: "Hidratação",
-            date: "2025-02-26",
-            time: "10:00",
-            status: "pending"
-          },
-          {
-            id: 4,
-            name: "Carlos Ferreira",
-            phone: "(11) 97654-3210",
-            service: "Corte de Cabelo",
-            date: "2025-02-26",
-            time: "11:30",
-            status: "completed"
-          },
-          {
-            id: 5,
-            name: "Lucia Santos",
-            phone: "(11) 95555-1234",
-            service: "Coloração",
-            date: "2025-02-27",
-            time: "09:00",
-            status: "canceled"
-          }
-        ]);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
-  }, []);
+  }, [page, filter, dateFilter]);
+
+  // Função para buscar quando o usuário parar de digitar
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page === 1) {
+        fetchAppointments();
+      } else {
+        setPage(1); // Isso vai acionar o useEffect acima
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Update appointment status
-  const updateStatus = async (id: number, newStatus: string) => {
-    // In a real app, you'd make an API call
-    // await fetch(`http://localhost:8000/appointments/${id}`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ status: newStatus })
-    // });
-    
-    // For now, update locally
-    setAppointments(appointments.map(appt => 
-      appt.id === id ? { ...appt, status: newStatus } : appt
-    ));
-  };
+ const updateStatus = async (id: number, newStatus: string) => {
+  try {
+    await axios.put(`${API_URL}/appointments/${id}`, { status: newStatus });
 
-  // Filter appointments based on selections
-  const filteredAppointments = appointments.filter(appt => {
-    const matchesStatus = filter === "all" || appt.status === filter;
-    const matchesDate = !dateFilter || appt.date === dateFilter;
-    const matchesSearch = !searchQuery || 
-      appt.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      appt.phone.includes(searchQuery);
-    
-    return matchesStatus && matchesDate && matchesSearch;
-  });
+    // Atualizar localmente
+    setAppointments(
+      appointments.map((appt) =>
+        appt.id === id ? { ...appt, status: newStatus } : appt
+      )
+    );
+
+    toast.success("Status atualizado. O status do agendamento foi atualizado com sucesso.");
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    toast.error("Erro ao atualizar. Não foi possível atualizar o status do agendamento.");
+  }
+};
 
   // Get status badge
   const getStatusBadge = (status: string) => {
@@ -163,15 +145,42 @@ export default function AppointmentsPage() {
     return `${day}/${month}/${year}`;
   };
 
+  // Função para lidar com paginação
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (page === 1) {
+      fetchAppointments();
+    } else {
+      setPage(1);
+    }
+  };
+
+const handleNewAppointmentSuccess = () => {
+  setIsNewAppointmentModalOpen(false);
+  fetchAppointments();
+  toast.success("Agendamento criado. O novo agendamento foi criado com sucesso.");
+};
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Gerenciar Agendamentos</h1>
-        <Button className="mt-4 md:mt-0">Novo Agendamento</Button>
+        <Button 
+          className="mt-4 md:mt-0"
+          onClick={() => setIsNewAppointmentModalOpen(true)}
+        >
+          Novo Agendamento
+        </Button>
       </div>
       
       <Card className="mb-6">
-        <div className="p-4 flex flex-col md:flex-row items-stretch md:items-center space-y-4 md:space-y-0 md:space-x-4">
+        <form onSubmit={handleSearchSubmit} className="p-4 flex flex-col md:flex-row items-stretch md:items-center space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex items-center flex-1">
             <Search className="h-4 w-4 mr-2 text-gray-500" />
             <Input 
@@ -209,7 +218,7 @@ export default function AppointmentsPage() {
               />
             </div>
           </div>
-        </div>
+        </form>
       </Card>
       
       <Card>
@@ -230,80 +239,130 @@ export default function AppointmentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredAppointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{appointment.name}</p>
-                          <p className="text-sm text-gray-500">{appointment.phone}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{appointment.service}</TableCell>
-                      <TableCell>{formatDate(appointment.date)}</TableCell>
-                      <TableCell>{appointment.time}</TableCell>
-                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          {appointment.status === "pending" && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => updateStatus(appointment.id, "confirmed")}
-                              variant="outline"
-                              className="text-xs h-8"
-                            >
-                              Confirmar
-                            </Button>
-                          )}
-                          {(appointment.status === "pending" || appointment.status === "confirmed") && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => updateStatus(appointment.id, "canceled")}
-                              variant="outline"
-                              className="text-xs h-8 text-red-600 border-red-200 hover:bg-red-50"
-                            >
-                              Cancelar
-                            </Button>
-                          )}
-                          {appointment.status === "confirmed" && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => updateStatus(appointment.id, "completed")}
-                              variant="outline"
-                              className="text-xs h-8 text-green-600 border-green-200 hover:bg-green-50"
-                            >
-                              Concluir
-                            </Button>
-                          )}
+                  {appointments.length > 0 ? (
+                    appointments.map((appointment) => (
+                      <TableRow key={appointment.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{appointment.name}</p>
+                            <p className="text-sm text-gray-500">{appointment.phone}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>{appointment.service}</TableCell>
+                        <TableCell>{formatDate(appointment.date)}</TableCell>
+                        <TableCell>{appointment.time}</TableCell>
+                        <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            {appointment.status === "pending" && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => updateStatus(appointment.id, "confirmed")}
+                                variant="outline"
+                                className="text-xs h-8"
+                              >
+                                Confirmar
+                              </Button>
+                            )}
+                            {(appointment.status === "pending" || appointment.status === "confirmed") && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => updateStatus(appointment.id, "canceled")}
+                                variant="outline"
+                                className="text-xs h-8 text-red-600 border-red-200 hover:bg-red-50"
+                              >
+                                Cancelar
+                              </Button>
+                            )}
+                            {appointment.status === "confirmed" && (
+                              <Button 
+                                size="sm" 
+                                onClick={() => updateStatus(appointment.id, "completed")}
+                                variant="outline"
+                                className="text-xs h-8 text-green-600 border-green-200 hover:bg-green-50"
+                              >
+                                Concluir
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <AlertCircle className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-gray-500">Nenhum agendamento encontrado.</p>
+                          <p className="text-gray-400 text-sm">Tente ajustar os filtros ou adicionar um novo agendamento.</p>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
               
-              {filteredAppointments.length === 0 && (
-                <div className="py-8 text-center">
-                  <p className="text-gray-500">Nenhum agendamento encontrado.</p>
-                </div>
+              {appointments.length > 0 && (
+                <Pagination className="mt-4">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => handlePageChange(page - 1)} 
+                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNumber = i + 1;
+                      return (
+                        <PaginationItem key={i}>
+                          <PaginationLink 
+                            onClick={() => handlePageChange(pageNumber)}
+                            isActive={page === pageNumber}
+                          >
+                            {pageNumber}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    {totalPages > 5 && (
+                      <>
+                        <PaginationItem>
+                          <PaginationLink className="cursor-default">...</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationLink 
+                            onClick={() => handlePageChange(totalPages)}
+                            isActive={page === totalPages}
+                          >
+                            {totalPages}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </>
+                    )}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => handlePageChange(page + 1)} 
+                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               )}
-              
-              <Pagination className="mt-4">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious href="#" />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink href="#" isActive>1</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext href="#" />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
             </>
           )}
         </div>
       </Card>
+      
+      {isNewAppointmentModalOpen && (
+        <NewAppointmentModal 
+          isOpen={isNewAppointmentModalOpen}
+          onClose={() => setIsNewAppointmentModalOpen(false)}
+          onSuccess={handleNewAppointmentSuccess}
+        />
+      )}
     </div>
   );
 }

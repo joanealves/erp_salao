@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { CalendarDays, Users, Scissors, DollarSign, Clock } from "lucide-react";
+import axios from "axios";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+interface Activity {
+  name: string;
+  service: string;
+  date: string;
+  time: string;
+  created_at: string;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -12,29 +23,48 @@ export default function AdminDashboard() {
     totalClients: 0,
     revenue: 0,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Fetch dashboard stats from API
     const fetchStats = async () => {
       try {
-        // These would be API calls to your Python backend
-        // const response = await fetch('http://localhost:8000/stats');
-        // const data = await response.json();
-        
-        // For now, using mock data
-        setStats({
-          todayAppointments: 8,
-          pendingAppointments: 12,
-          totalClients: 145,
-          revenue: 2500,
-        });
+        setLoading(true);
+        const response = await axios.get(`${API_URL}/stats`);
+        setStats(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching stats:", error);
+        setError("Falha ao carregar estatísticas");
+        setLoading(false);
       }
     };
 
     fetchStats();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Painel Administrativo</h1>
+        <div className="flex justify-center items-center h-64">
+          <p>Carregando estatísticas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6">Painel Administrativo</h1>
+        <div className="flex justify-center items-center h-64">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -117,49 +147,90 @@ export default function AdminDashboard() {
         </Link>
       </div>
       
-      {/* Recent Activity (placeholder) */}
+      {/* Recent Activity */}
       <h2 className="text-xl font-semibold mb-4">Atividades Recentes</h2>
+      <RecentActivityCard />
+    </div>
+  );
+}
+
+// Componente de atividades recentes
+function RecentActivityCard() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get<Activity[]>(`${API_URL}/appointments?limit=5&sort=created_at.desc`);
+        setActivities(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Erro ao buscar atividades recentes:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  if (loading) {
+    return (
       <Card className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-start">
+        <p className="text-center text-gray-500">Carregando atividades recentes...</p>
+      </Card>
+    );
+  }
+
+  // Se não houver atividades recentes
+  if (activities.length === 0) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-gray-500">Nenhuma atividade recente encontrada.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-6">
+      <div className="space-y-4">
+        {activities.map((activity, index) => (
+          <div key={index} className="flex items-start">
             <div className="mr-4 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
               <CalendarDays className="h-5 w-5 text-gray-500" />
             </div>
             <div>
               <p className="text-sm">
-                <span className="font-medium">Maria Silva</span> agendou um 
-                <span className="font-medium"> Corte de Cabelo</span> para hoje às 14:30
+                <span className="font-medium">{activity.name}</span> agendou um 
+                <span className="font-medium"> {activity.service}</span> para {formatDate(activity.date)} às {activity.time}
               </p>
-              <p className="text-xs text-gray-500">10 minutos atrás</p>
+              <p className="text-xs text-gray-500">{formatTimeAgo(activity.created_at)}</p>
             </div>
           </div>
-          
-          <div className="flex items-start">
-            <div className="mr-4 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <Users className="h-5 w-5 text-gray-500" />
-            </div>
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">João Pereira</span> cadastrou-se como novo cliente
-              </p>
-              <p className="text-xs text-gray-500">35 minutos atrás</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start">
-            <div className="mr-4 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <DollarSign className="h-5 w-5 text-gray-500" />
-            </div>
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Ana Souza</span> concluiu um serviço de 
-                <span className="font-medium"> Hidratação</span> no valor de <span className="font-medium">R$ 120,00</span>
-              </p>
-              <p className="text-xs text-gray-500">1 hora atrás</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
+        ))}
+      </div>
+    </Card>
   );
+}
+
+// Funções auxiliares
+function formatDate(dateStr: string) {
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function formatTimeAgo(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 1) return "agora mesmo";
+  if (diffInMinutes < 60) return `${diffInMinutes} minutos atrás`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} horas atrás`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} dias atrás`;
 }
