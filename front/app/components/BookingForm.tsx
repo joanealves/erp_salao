@@ -124,9 +124,9 @@ const BookingForm = () => {
         <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
           <select value={service} onChange={(e) => setService(e.target.value)} className="w-full border p-2 rounded mb-4" required>
             <option value="">Selecione um serviço</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.name}>{s.name}</option>
-            ))}
+              {services.map((s) => (
+                <option key={s.id} value={s.name}>{s.name}</option>
+              ))}
           </select>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border p-2 rounded mb-4" required />
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full border p-2 rounded mb-4" required />
