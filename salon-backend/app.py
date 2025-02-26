@@ -1,15 +1,14 @@
-# app.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from dotenv import load_dotenv
 from routes import appointments, services, clients, stats
+import os
+import psycopg2
 
 load_dotenv()
 
 app = FastAPI(title="Salon Management API")
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  
