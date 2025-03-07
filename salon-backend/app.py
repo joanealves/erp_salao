@@ -16,12 +16,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:3000"],  # Your frontend URL
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(appointments.router, prefix="/appointments", tags=["appointments"])
 app.include_router(services.router, prefix="/services", tags=["services"])
 app.include_router(clients.router, prefix="/clients", tags=["clients"])

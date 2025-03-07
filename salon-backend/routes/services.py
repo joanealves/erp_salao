@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[Service])
 async def get_services():
-    services = database.select_all("services")  # ✅ Agora chamamos usando database.
+    services = database.select_all("services")  
     return services or []
 
 @router.get("/{service_id}", response_model=Service)

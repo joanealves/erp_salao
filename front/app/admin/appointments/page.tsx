@@ -113,7 +113,6 @@ useEffect(() => {
   return () => clearTimeout(timer);
 }, [searchQuery]);
 
-  // Update appointment status
  const updateStatus = async (id: number, newStatus: string) => {
   try {
     await axios.put(`${API_URL}/appointments/${id}`, { status: newStatus });
@@ -151,7 +150,6 @@ useEffect(() => {
     );
   };
 
-  // Format date for display
   const formatDate = (dateStr: string) => {
     const [year, month, day] = dateStr.split('-');
     return `${day}/${month}/${year}`;

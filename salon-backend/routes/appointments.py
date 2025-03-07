@@ -14,11 +14,27 @@ from database import (
 )
 
 router = APIRouter()
+from fastapi import APIRouter, HTTPException, status, Depends
+from typing import List, Optional
+from datetime import datetime, date, timedelta
+from models.appointment import Appointment, AppointmentCreate, AppointmentUpdate
+import traceback
+from database import (
+    select_all,
+    select_by_id,
+    insert,
+    update,
+    delete,
+    execute_raw,
+    select_count,
+)
+
+router = APIRouter()
 
 @router.get("/", response_model=dict)
 async def get_appointments(
     status: Optional[str] = None,
-    date: Optional[str] = None,
+    date_str: Optional[str] = None,
     search: Optional[str] = None,
     page: Optional[int] = 1,
     limit: Optional[int] = 10,
@@ -28,8 +44,8 @@ async def get_appointments(
     conditions = {}
     if status:
         conditions["status"] = status
-    if date:
-        conditions["date"] = date
+    if date_str:
+        conditions["date"] = date_str
 
     # Calcular paginação
     offset = (page - 1) * limit
@@ -56,9 +72,9 @@ async def get_appointments(
         if status:
             query += " AND status = %s"
             params.append(status)
-        if date:
+        if date_str:
             query += " AND date = %s"
-            params.append(date)
+            params.append(date_str)
 
         # Adicionar ordenação
         if order_by:
@@ -79,9 +95,9 @@ async def get_appointments(
         if status:
             count_query += " AND status = %s"
             count_params.append(status)
-        if date:
+        if date_str:
             count_query += " AND date = %s"
-            count_params.append(date)
+            count_params.append(date_str)
 
         count_result = execute_raw(count_query, count_params)
         total_count = count_result[0]["count"] if count_result else 0
@@ -98,6 +114,17 @@ async def get_appointments(
             offset=offset,
             order_by=order_by,
         )
+    
+    # Converter os dados de data e hora para string
+    for item in appointments:
+        if isinstance(item.get('date'), date):
+            item['date'] = item['date'].isoformat()
+            
+        if hasattr(item.get('time', ''), 'total_seconds'):  # Se for timedelta
+            seconds = item['time'].total_seconds()
+            hours, remainder = divmod(seconds, 3600)
+            minutes, _ = divmod(remainder, 60)
+            item['time'] = f"{int(hours):02}:{int(minutes):02}"
 
     # Calcular total de páginas
     total_pages = (total_count + limit - 1) // limit if total_count > 0 else 1
@@ -116,32 +143,72 @@ async def get_appointment(appointment_id: int):
     appointment = select_by_id("appointments", appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Converter os campos date e time para string
+    if isinstance(appointment.get('date'), date):
+        appointment['date'] = appointment['date'].isoformat()
+        
+    if hasattr(appointment.get('time', ''), 'total_seconds'):  # Se for timedelta
+        seconds = appointment['time'].total_seconds()
+        hours, remainder = divmod(seconds, 3600)
+        minutes, _ = divmod(remainder, 60)
+        appointment['time'] = f"{int(hours):02}:{int(minutes):02}"
+        
     return appointment
-
 
 @router.post("/", response_model=Appointment)
 async def create_appointment(appointment: AppointmentCreate):
     try:
-        print(f"Dados recebidos na API: {appointment.dict()}")
+        print(f"Received appointment data: {appointment}")
         
-        appointment_data = appointment.dict()
+        # Convert string data to appropriate database types
+        appointment_data = appointment.dict(exclude_unset=True)
+        
+        # Convert date string to date object
+        if isinstance(appointment_data.get('date'), str):
+            appointment_data['date'] = datetime.strptime(appointment_data['date'], "%Y-%m-%d").date()
+        
+        # Convert time string to timedelta object
+        if isinstance(appointment_data.get('time'), str):
+            time_parts = appointment_data['time'].split(":")
+            hours = int(time_parts[0])
+            minutes = int(time_parts[1])
+            appointment_data['time'] = timedelta(hours=hours, minutes=minutes)
+        
+        # Set default status if not provided
+        if 'status' not in appointment_data:
+            appointment_data['status'] = 'pending'
+            
+        print(f"Processed data for database: {appointment_data}")
+        
+        # Insert into database
         result = insert("appointments", appointment_data)
         
         if not result:
-            print("Resultado da inserção vazio ou nulo")
-            raise HTTPException(status_code=500, detail="Failed to create appointment")
-        
-        print(f"Agendamento criado com sucesso: {result}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create appointment"
+            )
+            
+        # Format the response
+        if isinstance(result.get('date'), date):
+            result['date'] = result['date'].isoformat()
+            
+        if hasattr(result.get('time', ''), 'total_seconds'):
+            seconds = result['time'].total_seconds()
+            hours, remainder = divmod(seconds, 3600)
+            minutes, _ = divmod(remainder, 60)
+            result['time'] = f"{int(hours):02}:{int(minutes):02}"
+            
         return result
-    
+        
     except Exception as e:
-        # Captura qualquer exceção e imprime detalhes
-        import traceback
-        error_detail = f"Erro ao criar agendamento: {str(e)}\n{traceback.format_exc()}"
-        print(error_detail)
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.put("/{appointment_id}", response_model=Appointment)
+        print(f"Error creating appointment: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create appointment: {str(e)}"
+        )@router.put("/{appointment_id}", response_model=Appointment)
 async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
     # Verificar se o agendamento existe
     existing = select_by_id("appointments", appointment_id)

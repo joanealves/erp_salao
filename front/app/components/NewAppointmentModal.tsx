@@ -5,21 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppointmentCreatePayload } from "../../services/api";
 import { toast } from "sonner";
 
 interface Service {
   id: number;
   name: string;
 }
-
-interface Appointment {
-  service_id: number;
-  date: string;
-  time: string;
-  customer_name: string;
-  phone: string; 
-  status: string; 
-}
+// interface AppointmentCreatePayload {
+//   service: string;      
+//   date: string;          
+//   time: string;          
+//   name: string;         
+//   phone: string;        
+//   client_id?: number;   
+//   status?: string;       
+// }
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
@@ -51,14 +52,14 @@ const handleSubmit = async () => {
 
   setLoading(true);
 
-  const appointmentData: Appointment = {
-    service_id: selectedService, // Correto agora
-    date,
-    time,
-    customer_name: customerName, // Corrigido
-    phone: "00000000000", // Adicionado corretamente
-    status: "pending", // Adicionado corretamente
-  };
+const appointmentData: AppointmentCreatePayload = {
+  service: services.find((s) => s.id === selectedService)?.name || "", // Converte ID para Nome
+  date,
+  time,
+  name: customerName, 
+  phone: "00000000000",
+  status: "pending",
+};
 
   const success = await createAppointment(appointmentData);
 

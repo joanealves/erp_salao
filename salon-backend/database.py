@@ -19,7 +19,7 @@ try:
     connection_pool = pooling.MySQLConnectionPool(
         pool_name="salon_pool",
         pool_size=5,
-        pool_reset_session=False,  # 🔹 Evita erros ao resetar sessões
+        pool_reset_session=False, 
         host=DB_HOST,
         port=DB_PORT,
         user=DB_USER,

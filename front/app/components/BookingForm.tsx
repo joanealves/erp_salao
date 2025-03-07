@@ -4,6 +4,7 @@ import { fetchServices, fetchClients, createAppointment } from "../../services/a
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppointmentCreatePayload } from "../../services/api";
 import { toast } from "sonner";
 import { Calendar } from "lucide-react";
 
@@ -14,15 +15,15 @@ interface Service {
   price: number;
 }
 
-interface AppointmentCreatePayload {
-  service: string;       // Nome do serviço (não o ID)
-  date: string;          // Formato "YYYY-MM-DD"
-  time: string;          // Formato "HH:MM"
-  name: string;          // Nome do cliente
-  phone: string;         // Telefone do cliente
-  client_id?: number;    // ID do cliente (opcional)
-  status?: string;       // Status (opcional, default "pending")
-}
+// interface AppointmentCreatePayload {
+//   service: string;       
+//   date: string;          
+//   time: string;          
+//   name: string;          
+//   phone: string;         
+//   client_id?: number;    
+//   status?: string;       
+// }
 
 const BookingForm = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -58,19 +59,15 @@ const BookingForm = () => {
     setIsLoading(true);
     
     try {
-      // Buscar cliente pelo telefone
       const clients = await fetchClients(phone);
       let clientId: number | undefined;
       
-      // Se cliente existe, usa o ID dele
       if (clients.length > 0) {
         clientId = clients[0].id;
       } else {
-        // Se não existir, será usado o client_id null e o back-end tratará isso
         clientId = undefined;
       }
 
-      // Encontrar o nome do serviço baseado no ID selecionado
       const selectedServiceObject = services.find(s => s.id === Number(selectedService));
       
       if (!selectedServiceObject) {
@@ -79,12 +76,11 @@ const BookingForm = () => {
         return;
       }
 
-      // Criar o objeto de acordo com o formato esperado pelo backend
       const appointmentData: AppointmentCreatePayload = {
-        service: selectedServiceObject.name,  // Enviando o nome do serviço, não o ID
+        service: selectedServiceObject.name,  
         date,
         time,
-        name,  // Usando o campo "name" como esperado pelo backend
+        name,  
         phone,
         client_id: clientId,
         // Status é opcional, o backend vai usar o valor padrão "pending"

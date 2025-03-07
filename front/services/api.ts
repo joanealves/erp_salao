@@ -29,7 +29,7 @@ export interface AppointmentCreatePayload {
   time: string;
   name: string;
   phone: string;
-  client_id?: number;
+  client_id: null;
   status?: string;
 }
 
@@ -61,7 +61,21 @@ export async function fetchClients(search?: string): Promise<Client[]> {
 export async function createAppointment(appointmentData: AppointmentCreatePayload): Promise<boolean> {
   try {
     console.log("Enviando para API:", appointmentData);
-    const response = await axios.post(`${API_URL}/appointments/`, appointmentData);
+    
+    // Make sure all fields are in the correct format
+    const formattedData = {
+      ...appointmentData,
+      // Ensure date is in YYYY-MM-DD format
+      date: appointmentData.date,
+      // Ensure time is in HH:MM format
+      time: appointmentData.time,
+      // Set client_id to null if undefined
+      client_id: appointmentData.client_id || null,
+      // Add status if not provided
+      status: appointmentData.status || "pending"
+    };
+    
+    const response = await axios.post(`${API_URL}/appointments/`, formattedData);
     console.log("Resposta do servidor:", response.data);
     return response.status === 200 || response.status === 201;
   } catch (error) {
