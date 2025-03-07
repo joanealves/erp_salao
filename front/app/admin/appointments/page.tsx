@@ -70,16 +70,26 @@ export default function AppointmentsPage() {
     }
 
     if (searchQuery) {
-      url += `&search=${searchQuery}`;
+      url += `&search=${encodeURIComponent(searchQuery)}`;
     }
 
     const response = await axios.get(url);
-    setAppointments(response.data.items || []);
-    setTotalPages(response.data.total_pages || 1);
+    
+    if (response.data && response.data.items) {
+      setAppointments(response.data.items);
+      setTotalPages(response.data.total_pages || 1);
+    } else {
+      setAppointments([]);
+      setTotalPages(1);
+      console.warn("Formato de resposta inesperado:", response.data);
+    }
+    
     setLoading(false);
   } catch (error) {
     console.error("Error fetching appointments:", error);
     toast.error("Erro ao carregar agendamentos. Não foi possível buscar os agendamentos. Tente novamente.");
+    setAppointments([]);
+    setTotalPages(1);
     setLoading(false);
   }
 };
@@ -89,17 +99,19 @@ export default function AppointmentsPage() {
   }, [page, filter, dateFilter]);
 
   // Função para buscar quando o usuário parar de digitar
-  useEffect(() => {
-    const timer = setTimeout(() => {
+useEffect(() => {
+  const timer = setTimeout(() => {
+    if (searchQuery) {
       if (page === 1) {
         fetchAppointments();
       } else {
-        setPage(1); // Isso vai acionar o useEffect acima
+        setPage(1); 
       }
-    }, 500);
+    }
+  }, 500);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  return () => clearTimeout(timer);
+}, [searchQuery]);
 
   // Update appointment status
  const updateStatus = async (id: number, newStatus: string) => {

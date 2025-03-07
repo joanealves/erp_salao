@@ -1,38 +1,24 @@
-// app/admin/appointments/components/NewAppointmentModal.tsx
-"use client";
-
 import { useState, useEffect } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
+import { fetchServices, createAppointment } from "../../services/api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import axios from "axios";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface Service {
   id: number;
   name: string;
-  price: number;
-  duration: number;
+}
+
+interface Appointment {
+  service_id: number;
+  date: string;
+  time: string;
+  customer_name: string;
+  phone: string; 
+  status: string; 
 }
 
 interface NewAppointmentModalProps {
@@ -44,34 +30,49 @@ interface NewAppointmentModalProps {
 const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<number | null>(null);
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API_URL}/services`)
-      .then(response => setServices(response.data))
-      .catch(error => toast.error("Erro ao carregar serviços"));
+    loadServices();
   }, []);
 
-  const handleSubmit = async () => {
-    if (!selectedService || !date || !customerName) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-
-    try {
-      await axios.post(`${API_URL}/appointments`, {
-        service_id: selectedService,
-        date,
-        customer_name: customerName
-      });
-      toast.success("Agendamento criado com sucesso");
-      onSuccess();
-      onClose();
-    } catch (error) {
-      toast.error("Erro ao criar agendamento");
-    }
+  const loadServices = async () => {
+    const data: Service[] = await fetchServices();
+    setServices(data);
   };
+const handleSubmit = async () => {
+  if (!selectedService || !date || !customerName || !time) {
+    toast.error("Preencha todos os campos");
+    return;
+  }
+
+  setLoading(true);
+
+  const appointmentData: Appointment = {
+    service_id: selectedService, // Correto agora
+    date,
+    time,
+    customer_name: customerName, // Corrigido
+    phone: "00000000000", // Adicionado corretamente
+    status: "pending", // Adicionado corretamente
+  };
+
+  const success = await createAppointment(appointmentData);
+
+  if (success) {
+    toast.success("Agendamento criado com sucesso");
+    onSuccess();
+    onClose();
+  } else {
+    toast.error("Erro ao criar agendamento");
+  }
+
+  setLoading(false);
+};
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -88,7 +89,7 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
             <SelectValue placeholder="Selecione um serviço" />
           </SelectTrigger>
           <SelectContent>
-            {services.map(service => (
+            {services.map((service) => (
               <SelectItem key={service.id} value={String(service.id)}>
                 {service.name}
               </SelectItem>
@@ -97,20 +98,15 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
         </Select>
 
         <Label>Data</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline">
-              {date ? format(date, "dd/MM/yyyy") : "Selecione uma data"}
-              <CalendarIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <Calendar mode="single" selected={date} onSelect={(day) => setDate(day ?? undefined)} />
-          </PopoverContent>
-        </Popover>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+
+        <Label>Horário</Label>
+        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
 
         <DialogFooter>
-          <Button onClick={handleSubmit}>Confirmar</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Carregando..." : "Confirmar"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

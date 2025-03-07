@@ -1,5 +1,6 @@
+# routes/stats.py
 from fastapi import APIRouter, HTTPException
-from database import supabase
+import database as db
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -10,32 +11,34 @@ async def get_dashboard_stats():
     today = datetime.now().strftime("%Y-%m-%d")
     
     # Agendamentos de hoje
-    today_appointments = supabase.table("appointments").select("count").eq("date", today).execute()
+    today_appointments = db.select_count("appointments", {"date": today})
     
     # Agendamentos pendentes
-    pending_appointments = supabase.table("appointments").select("count").eq("status", "pending").execute()
+    pending_appointments = db.select_count("appointments", {"status": "pending"})
     
     # Total de clientes
-    total_clients = supabase.table("clients").select("count").execute()
+    total_clients = db.select_count("clients")
     
     # Faturamento mensal (último mês)
     first_day = (datetime.now().replace(day=1) - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
     last_day = datetime.now().replace(day=1) - timedelta(days=1)
     last_day = last_day.strftime("%Y-%m-%d")
     
+    # Query para calcular receita: buscar agendamentos concluídos e juntar com tabela de serviços
     revenue_query = """
-    SELECT SUM(s.price) as revenue
+    SELECT SUM(s.price) as total_revenue
     FROM appointments a
     JOIN services s ON a.service = s.name
     WHERE a.status = 'completed'
-    AND a.date BETWEEN $1 AND $2
+    AND a.date BETWEEN %s AND %s
     """
     
-    revenue = supabase.rpc("revenue_calculation", {"start_date": first_day, "end_date": last_day}).execute()
+    revenue_result = db.execute_raw(revenue_query, (first_day, last_day))
+    revenue = revenue_result[0]['total_revenue'] if revenue_result and revenue_result[0]['total_revenue'] else 0
     
     return {
-        "todayAppointments": today_appointments.data[0]["count"] if today_appointments.data else 0,
-        "pendingAppointments": pending_appointments.data[0]["count"] if pending_appointments.data else 0,
-        "totalClients": total_clients.data[0]["count"] if total_clients.data else 0,
-        "revenue": revenue.data[0]["revenue"] if revenue.data else 0
+        "todayAppointments": today_appointments,
+        "pendingAppointments": pending_appointments,
+        "totalClients": total_clients,
+        "revenue": round(float(revenue), 2)
     }

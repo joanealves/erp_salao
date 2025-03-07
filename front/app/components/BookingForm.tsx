@@ -1,145 +1,201 @@
 "use client";
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-// Configurar Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { fetchServices, fetchClients, createAppointment } from "../../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { Calendar } from "lucide-react";
 
 interface Service {
   id: number;
   name: string;
+  description?: string;
   price: number;
 }
 
+interface AppointmentCreatePayload {
+  service: string;       // Nome do serviço (não o ID)
+  date: string;          // Formato "YYYY-MM-DD"
+  time: string;          // Formato "HH:MM"
+  name: string;          // Nome do cliente
+  phone: string;         // Telefone do cliente
+  client_id?: number;    // ID do cliente (opcional)
+  status?: string;       // Status (opcional, default "pending")
+}
+
 const BookingForm = () => {
-  const [service, setService] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Buscar serviços disponíveis
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const { data, error } = await supabase.from("services").select("*");
-
-        if (error) throw error;
-
-        setServices(data || []);
-      } catch (error) {
-        console.error("Erro ao buscar serviços:", error);
-      }
-    };
-
-    fetchServices();
+    loadServices();
   }, []);
 
- const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+  const loadServices = async () => {
     try {
-      let clientId: number;
-
-      // Verificar se o cliente já existe pelo telefone
-      const { data: existingClients, error: clientError } = await supabase
-        .from("clients")
-        .select("id, email") // Buscar também o e-mail salvo
-        .eq("phone", phone)
-        .limit(1);
-
-      if (clientError) throw clientError;
-
-      if (existingClients && existingClients.length > 0) {
-        // Cliente já existe, pegar o ID
-        clientId = existingClients[0].id;
-
-        // Atualizar o nome e email APENAS se o email for diferente
-        if (existingClients[0].email !== email) {
-          await supabase.from("clients").update({ name, email }).eq("id", clientId);
-        }
-      } else {
-        // Cliente não existe, criar um novo
-        const { data: newClient, error: createError } = await supabase
-          .from("clients")
-          .insert([{ name, phone, email }])
-          .select("id")
-          .single();
-
-        if (createError) throw createError;
-        clientId = newClient.id;
-      }
-
-      // Inserir o agendamento
-      const { error: appointmentError } = await supabase.from("appointments").insert([
-        {
-          service,
-          date,
-          time,
-          client_id: clientId,
-          name, // Caso ainda esteja na tabela
-          status: "pendente",
-        },
-      ]);
-
-      if (appointmentError) throw appointmentError;
-
-      setIsSubmitted(true);
-    } catch (err) {
-      console.error("Erro ao processar agendamento:", err);
-      setError("Ocorreu um erro ao agendar. Por favor, tente novamente.");
-    } finally {
-      setLoading(false);
+      const data = await fetchServices();
+      setServices(data);
+    } catch (error) {
+      toast.error("Erro ao carregar serviços");
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!selectedService || !date || !time || !name || !phone) {
+      toast.error("Por favor, preencha todos os campos obrigatórios");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Buscar cliente pelo telefone
+      const clients = await fetchClients(phone);
+      let clientId: number | undefined;
+      
+      // Se cliente existe, usa o ID dele
+      if (clients.length > 0) {
+        clientId = clients[0].id;
+      } else {
+        // Se não existir, será usado o client_id null e o back-end tratará isso
+        clientId = undefined;
+      }
+
+      // Encontrar o nome do serviço baseado no ID selecionado
+      const selectedServiceObject = services.find(s => s.id === Number(selectedService));
+      
+      if (!selectedServiceObject) {
+        toast.error("Serviço selecionado não encontrado");
+        setIsLoading(false);
+        return;
+      }
+
+      // Criar o objeto de acordo com o formato esperado pelo backend
+      const appointmentData: AppointmentCreatePayload = {
+        service: selectedServiceObject.name,  // Enviando o nome do serviço, não o ID
+        date,
+        time,
+        name,  // Usando o campo "name" como esperado pelo backend
+        phone,
+        client_id: clientId,
+        // Status é opcional, o backend vai usar o valor padrão "pending"
+      };
+
+      console.log("Dados enviados:", appointmentData);
+      
+      const success = await createAppointment(appointmentData);
+
+      if (success) {
+        toast.success("Agendamento realizado com sucesso!");
+        // Limpar formulário
+        setSelectedService("");
+        setDate("");
+        setTime("");
+        setName("");
+        setPhone("");
+        setEmail("");
+      } else {
+        toast.error("Erro ao realizar agendamento");
+      }
+    } catch (error) {
+      console.error("Erro no agendamento:", error);
+      toast.error("Ocorreu um erro ao processar seu agendamento");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <section className="py-16 bg-gray-100">
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-gray-800">
-          {isSubmitted ? "Agendamento Confirmado!" : "Agende seu Horário"}
-        </h2>
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Agendar Horário</h2>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Serviço</label>
+        <Select value={selectedService} onValueChange={setSelectedService} required>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Selecione um serviço" />
+          </SelectTrigger>
+          <SelectContent>
+            {services.map((s) => (
+               <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      {isSubmitted ? (
-        <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md text-center">
-          <p className="text-lg text-gray-700 mb-4">Seu agendamento foi realizado com sucesso!</p>
-          <button
-            className="mt-6 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-semibold transition"
-            onClick={() => setIsSubmitted(false)}
-          >
-            Fazer Novo Agendamento
-          </button>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Data</label>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Input 
+            className="pl-10" 
+            type="date" 
+            value={date} 
+            onChange={(e) => setDate(e.target.value)} 
+            required 
+          />
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-          <select value={service} onChange={(e) => setService(e.target.value)} className="w-full border p-2 rounded mb-4" required>
-            <option value="">Selecione um serviço</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.name}>{s.name}</option>
-              ))}
-          </select>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border p-2 rounded mb-4" required />
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full border p-2 rounded mb-4" required />
-          <input type="text" placeholder="Seu Nome" value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded mb-4" required />
-          <input type="tel" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border p-2 rounded mb-4" required />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border p-2 rounded mb-4" required />
-          <button type="submit" className="w-full bg-green-600 hover:bg-green-700 p-2 text-white rounded font-semibold" disabled={loading}>
-            {loading ? "Aguarde..." : "Confirmar Agendamento"}
-          </button>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
-        </form>
-      )}
-    </section>
+      </div>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Horário</label>
+        <Input 
+          type="time" 
+          value={time} 
+          onChange={(e) => setTime(e.target.value)} 
+          required 
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Nome</label>
+        <Input 
+          type="text" 
+          placeholder="Seu nome completo" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          required 
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Telefone</label>
+        <Input 
+          type="tel" 
+          placeholder="(00) 00000-0000" 
+          value={phone} 
+          onChange={(e) => setPhone(e.target.value)} 
+          required 
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Email (opcional)</label>
+        <Input 
+          type="email" 
+          placeholder="seu@email.com" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+      </div>
+      
+      <Button 
+        type="submit" 
+        className="w-full" 
+        disabled={isLoading}
+      >
+        {isLoading ? "Processando..." : "Confirmar Agendamento"}
+      </Button>
+    </form>
   );
 };
 

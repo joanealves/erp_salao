@@ -6,7 +6,7 @@ class ServiceBase(BaseModel):
     name: str = Field(..., min_length=3)
     description: Optional[str] = None
     price: float = Field(...)
-    duration: int = Field(...)
+    duration: Optional[int] = Field(None)
 
 class Service(ServiceBase):
     id: int

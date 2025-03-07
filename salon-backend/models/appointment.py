@@ -1,4 +1,3 @@
-# models/appointment.py
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
@@ -9,7 +8,7 @@ class AppointmentBase(BaseModel):
     time: str = Field(..., pattern=r"^\d{2}:\d{2}$") 
     name: str = Field(..., min_length=3)
     phone: str = Field(..., min_length=8)
-    client_id: int = Field(...)
+    client_id: Optional[int] = None
 
 class Appointment(AppointmentBase):
     id: int
@@ -26,3 +25,4 @@ class AppointmentUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     status: Optional[str] = None
+    client_id: Optional[int] = None

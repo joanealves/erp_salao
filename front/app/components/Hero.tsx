@@ -8,7 +8,6 @@ const Hero = () => {
       {/* Gradiente com opacidade ajustada */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-gray-900/10"></div>
 
-      {/* Imagem de fundo */}
       <Image
         src={heroImage}
         alt="Salon"
@@ -25,7 +24,6 @@ const Hero = () => {
             Agende seu horário e tenha uma experiência incrível!
           </p>
 
-          {/* Botão de CTA */}
           <Link
             href="#booking"
             className="mt-6 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-semibold transition shadow-lg inline-block"
