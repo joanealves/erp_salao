@@ -111,8 +111,14 @@ const BookingForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Agendar Horário</h2>
+    <>
+    <div className="my-10 text-center">
+        <h2 className="text-2xl font-bold text-green-600">Agende seu horário</h2>
+    </div>
+
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md my-10">
+
+      <h2 className="text-xl font-medium mb-4">Confira nossa agenda</h2>
       
       <div className="space-y-2">
         <label className="block text-sm font-medium">Serviço</label>
@@ -191,7 +197,8 @@ const BookingForm = () => {
       >
         {isLoading ? "Processando..." : "Confirmar Agendamento"}
       </Button>
-    </form>
+      </form>
+      </>
   );
 };
 

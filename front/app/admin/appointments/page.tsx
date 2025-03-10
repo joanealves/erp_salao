@@ -31,6 +31,7 @@ import { Calendar, Search, Filter, Check, X, Clock, AlertCircle } from "lucide-r
 import { toast, Toaster } from 'sonner'
 import axios from "axios";
 import NewAppointmentModal from "../../components/NewAppointmentModal";
+import AdminCalendar from "../../components/AdminCalendar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -131,7 +132,6 @@ useEffect(() => {
   }
 };
 
-  // Get status badge
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { color: string, icon: any, text: string }> = {
       pending: { color: "bg-yellow-100 text-yellow-800", icon: <Clock size={14} />, text: "Pendente" },
@@ -155,7 +155,6 @@ useEffect(() => {
     return `${day}/${month}/${year}`;
   };
 
-  // Função para lidar com paginação
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
@@ -200,6 +199,7 @@ const handleNewAppointmentSuccess = () => {
               className="flex-1"
             />
           </div>
+
           
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -229,6 +229,13 @@ const handleNewAppointmentSuccess = () => {
             </div>
           </div>
         </form>
+      </Card>
+
+      <Card className="mb-6">
+        <div className="p-4">
+          <h2 className="text-xl font-semibold mb-4">Calendário de Agendamentos</h2>
+          <AdminCalendar />
+        </div>
       </Card>
       
       <Card>
@@ -374,5 +381,8 @@ const handleNewAppointmentSuccess = () => {
         />
       )}
     </div>
+    
   );
+  
+
 }

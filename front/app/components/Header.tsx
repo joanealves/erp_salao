@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaLock } from "react-icons/fa";
 import Link from "next/link";
 
 const Header = () => {
@@ -10,7 +10,7 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 w-full bg-gray-900 text-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="../assets/logo.jpg" className="text-2xl font-bold">
+        <Link href="/" className="text-2xl font-bold">
           Beauty Salon
         </Link>
 
@@ -19,6 +19,10 @@ const Header = () => {
           <Link href="#services" className="hover:text-green-400">Serviços</Link>
           <Link href="#about" className="hover:text-green-400">Sobre</Link>
           <Link href="#contact" className="hover:text-green-400">Contato</Link>
+          <Link href="/admin" className="flex items-center space-x-1 text-green-400 hover:text-green-300">
+            <FaLock size={14} />
+            <span>Admin</span>
+          </Link>
         </nav>
 
         {/* Botão do menu mobile */}
@@ -35,6 +39,10 @@ const Header = () => {
         <Link href="#services" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Serviços</Link>
         <Link href="#about" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Sobre</Link>
         <Link href="#contact" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Contato</Link>
+        <Link href="/admin" className="flex items-center space-x-1 text-green-400 hover:text-green-300" onClick={() => setIsOpen(false)}>
+          <FaLock size={14} />
+          <span>Admin</span>
+        </Link>
       </div>
     </header>
   );
