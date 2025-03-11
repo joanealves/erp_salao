@@ -29,7 +29,7 @@ export interface AppointmentCreatePayload {
   time: string;
   name: string;
   phone: string;
-  client_id: null;
+  client_id?: number | null; 
   status?: string;
 }
 

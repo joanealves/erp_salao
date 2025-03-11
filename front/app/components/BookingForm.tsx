@@ -15,15 +15,6 @@ interface Service {
   price: number;
 }
 
-// interface AppointmentCreatePayload {
-//   service: string;       
-//   date: string;          
-//   time: string;          
-//   name: string;          
-//   phone: string;         
-//   client_id?: number;    
-//   status?: string;       
-// }
 
 const BookingForm = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -112,9 +103,11 @@ const BookingForm = () => {
 
   return (
     <>
-    <div className="my-10 text-center">
-        <h2 className="text-2xl font-bold text-green-600">Agende seu horário</h2>
-    </div>
+      <div id="booking">  
+        <div className="my-10 text-center">
+            <h2 className="text-2xl font-bold text-green-600">Agende seu horário</h2>
+          </div>
+      </div>    
 
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-lg shadow-md my-10">
 
