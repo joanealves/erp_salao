@@ -1,4 +1,3 @@
-// app/admin/services/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
