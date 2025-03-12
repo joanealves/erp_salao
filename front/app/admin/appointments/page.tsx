@@ -160,7 +160,7 @@ export default function AppointmentsPage() {
 
   type Status = "pending" | "confirmed" | "completed" | "canceled";
 
-const getStatusBadge = (status: Status) => {
+  const getStatusBadge = (status: Status) => {
     const badges = {
       pending: { color: "bg-yellow-100 text-yellow-800", icon: <Clock size={14} />, text: "Pendente" },
       confirmed: { color: "bg-blue-100 text-blue-800", icon: <Check size={14} />, text: "Confirmado" },
@@ -176,7 +176,7 @@ const getStatusBadge = (status: Status) => {
     );
   };
 
-const getStatusText = (status: Status): string => {
+  const getStatusText = (status: Status): string => {
     const statusMap: Record<Status, string> = {
       pending: "Pendente",
       confirmed: "Confirmado",
@@ -243,9 +243,9 @@ const getStatusText = (status: Status): string => {
           <p className="text-gray-500 mt-1">Visualize e gerencie todos os agendamentos</p>
         </div>
         <div className="flex mt-4 md:mt-0 space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh} 
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
             disabled={refreshing}
             className="flex items-center space-x-2"
           >
@@ -261,7 +261,7 @@ const getStatusText = (status: Status): string => {
               </>
             )}
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsNewAppointmentModalOpen(true)}
             className="flex items-center space-x-2"
           >
@@ -287,20 +287,20 @@ const getStatusText = (status: Status): string => {
                 <SelectItem value="canceled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
-            <Input 
-              type="date" 
-              value={dateFilter} 
-              onChange={(e) => setDateFilter(e.target.value)} 
-              placeholder="Filtrar por data" 
+            <Input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              placeholder="Filtrar por data"
               className="w-full md:w-[180px]"
             />
           </div>
           <form onSubmit={handleSearchSubmit} className="flex space-x-2 w-full md:w-auto">
-            <Input 
-              type="text" 
-              placeholder="Pesquisar por nome ou serviço..." 
-              value={searchQuery} 
-              onChange={(e) => setSearchQuery(e.target.value)} 
+            <Input
+              type="text"
+              placeholder="Pesquisar por nome ou serviço..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full md:w-[250px]"
             />
             <Button type="submit" variant="secondary">
@@ -310,107 +310,109 @@ const getStatusText = (status: Status): string => {
         </div>
       </Card>
 
-      {/* Modo de Visualização */}
-      <div className="flex justify-end mb-4">
-        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
+      {/* Modo de Visualização com Tabs corrigido */}
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
+        <div className="flex justify-end mb-4">
           <TabsList>
             <TabsTrigger value="table">Tabela</TabsTrigger>
             <TabsTrigger value="calendar">Calendário</TabsTrigger>
           </TabsList>
-        </Tabs>
-      </div>
+        </div>
 
-      {/* Conteúdo Principal */}
-      <TabsContent value="table">
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+        {/* Conteúdo Principal - Agora dentro do componente Tabs */}
+        <TabsContent value="table">
+          <Card>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Serviço</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
-              ) : appointments.length > 0 ? (
-                appointments.map((appt) => (
-                  <TableRow key={appt.id}>
-                    <TableCell>{appt.name}</TableCell>
-                    <TableCell>{appt.phone}</TableCell>
-                    <TableCell>{appt.service}</TableCell>
-                    <TableCell>{formatDate(appt.date)} às {appt.time}</TableCell>
-                    <TableCell>{getStatusBadge2(appt.status as Status)}</TableCell>
-                    <TableCell>
-                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => openAppointmentDetails(appt)}>
-                          Ver Detalhes
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSendSMS(appt.phone)}>
-                          Enviar SMS
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => updateStatus(appt.id, "confirmed")}>
-                          Confirmar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateStatus(appt.id, "canceled")}>
-                          Cancelar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">
+                      Carregando...
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    Nenhum agendamento encontrado.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-        {/* Paginação */}
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => handlePageChange(page - 1)} 
-                className={page === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => handlePageChange(page + 1)} 
-                className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </TabsContent>
-      <TabsContent value="calendar">
-        <AdminCalendar initialAppointments={appointments} />
-      </TabsContent>
+                ) : appointments.length > 0 ? (
+                  appointments.map((appt) => (
+                    <TableRow key={appt.id}>
+                      <TableCell>{appt.name}</TableCell>
+                      <TableCell>{appt.phone}</TableCell>
+                      <TableCell>{appt.service}</TableCell>
+                      <TableCell>{formatDate(appt.date)} às {appt.time}</TableCell>
+                      <TableCell>{getStatusBadge2(appt.status as Status)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical size={16} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => openAppointmentDetails(appt)}>
+                              Ver Detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendSMS(appt.phone)}>
+                              Enviar SMS
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => updateStatus(appt.id, "confirmed")}>
+                              Confirmar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateStatus(appt.id, "canceled")}>
+                              Cancelar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">
+                      Nenhum agendamento encontrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+          {/* Paginação */}
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(page - 1)}
+                  className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => handlePageChange(page + 1)}
+                  className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <AdminCalendar initialAppointments={appointments} />
+        </TabsContent>
+      </Tabs>
+
       {/* Modal de Novo Agendamento */}
-      <NewAppointmentModal 
-        isOpen={isNewAppointmentModalOpen} 
-        onClose={() => setIsNewAppointmentModalOpen(false)} 
-        onSuccess={handleNewAppointmentSuccess} 
+      <NewAppointmentModal
+        isOpen={isNewAppointmentModalOpen}
+        onClose={() => setIsNewAppointmentModalOpen(false)}
+        onSuccess={handleNewAppointmentSuccess}
       />
 
       <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>

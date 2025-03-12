@@ -37,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AdminCalendar from "../components/AdminCalendar";
+// import AdminSidebar from "../components/AdminSidebar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -161,8 +162,9 @@ const chartData =
     link.click();
     document.body.removeChild(link);
   };
-
+      
   return (
+    
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Painel Administrativo</h1>
@@ -371,6 +373,7 @@ const chartData =
         </CardContent>
       </Card>
     </div>
+    
   );
 }
 
