@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -54,9 +54,15 @@ const routes = [
   },
 ];
 
+
 export function AdminSidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
+
+  useEffect(() => {
+    console.log("AdminSidebar mounted");
+    return () => console.log("AdminSidebar unmounted");
+  }, []);
 
   return (
     <div className={cn(
@@ -116,3 +122,4 @@ export function AdminSidebar({ className }: SidebarProps) {
     </div>
   );
 }
+export default AdminSidebar;

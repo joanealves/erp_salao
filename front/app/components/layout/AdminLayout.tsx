@@ -1,4 +1,3 @@
-// components/layouts/AdminLayout.tsx
 "use client";
 
 import { useState } from "react";

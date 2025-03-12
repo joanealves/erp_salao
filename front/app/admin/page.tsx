@@ -37,7 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AdminCalendar from "../components/AdminCalendar";
-// import AdminSidebar from "../components/AdminSidebar";
+import AdminLayout  from "../components/layout/AdminLayout";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -71,38 +71,44 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Painel Administrativo</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4 md:p-6">
-              <Skeleton className="h-10 w-10 rounded-full mb-4" />
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-6 w-16" />
-            </Card>
-          ))}
+    <AdminLayout> 
+      <div className="flex flex-col md:flex-row min-h-screen">
+        <div className="flex-1 p-4 md:p-6 max-w-7xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Painel Administrativo</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="p-4 md:p-6">
+                <Skeleton className="h-10 w-10 rounded-full mb-4" />
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-16" />
+              </Card>
+            ))}
+          </div>
+          <Card className="mb-6">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64 w-full" />
+            </CardContent>
+          </Card>
         </div>
-        <Card className="mb-6">
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
-      </div>
+        </div>
+      </AdminLayout>  
     );
   }
 
   if (error) {
     return (
+    <AdminLayout>  
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Painel Administrativo</h1>
         <Alert variant="destructive">
           <AlertTitle>Erro</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      </div>
+        </div>
+    </AdminLayout>    
     );
   }
 
@@ -164,7 +170,7 @@ const chartData =
   };
       
   return (
-    
+    <AdminLayout>  
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Painel Administrativo</h1>
@@ -373,7 +379,7 @@ const chartData =
         </CardContent>
       </Card>
     </div>
-    
+    </AdminLayout>  
   );
 }
 

@@ -444,4 +444,4 @@ export default function AppointmentsPage() {
       <Toaster position="bottom-right" />
     </div>
   );
-}
+} 
