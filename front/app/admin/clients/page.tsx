@@ -1,403 +1,305 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 
-import AdminLayout from "../../components/layout/AdminLayout";
+import AdminLayout from "../../components/layout/AdminLayout"
 
-import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, RefreshCw, Search, MoreVertical, UserPlus } from "lucide-react";
+import { Moon, Sun, Monitor, Save, RefreshCw } from "lucide-react";
+import { useTheme } from "next-themes";
 import { toast, Toaster } from "sonner";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
-type Client = {
-    id: number;
-    name: string;
-    phone: string;
-    email: string;
-    last_visit: string;
-    total_visits: number;
-    created_at: string;
-};
-
-export default function ClientsPage() {
-    const [clients, setClients] = useState<Client[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
-    const [newClient, setNewClient] = useState({
-        name: "",
-        phone: "",
-        email: "",
-    });
-    const [formErrors, setFormErrors] = useState({
-        name: "",
-        phone: "",
-        email: ""
+export default function SettingsPage() {
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [userSettings, setUserSettings] = useState({
+        notificationsEnabled: true,
+        emailNotifications: true,
+        smsNotifications: true,
+        language: "pt-BR",
+        timeZone: "America/Sao_Paulo",
     });
 
-    const fetchClients = async () => {
-        try {
-            setLoading(true);
-            let url = `${API_URL}/clients?page=${page}&limit=10`;
-            if (searchQuery) {
-                url += `&search=${encodeURIComponent(searchQuery)}`;
-            }
-            const response = await axios.get(url);
-            if (response.data && response.data.items) {
-                setClients(response.data.items);
-                setTotalPages(response.data.total_pages || 1);
-            } else {
-                setClients([]);
-                setTotalPages(1);
-            }
-        } catch (error) {
-            console.error("Error fetching clients:", error);
-            toast.error("Erro ao carregar clientes");
-            setClients([]);
-            setTotalPages(1);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Garantir que o componente está montado antes de acessar o tema
     useEffect(() => {
-        fetchClients();
-    }, [page]);
+        setMounted(true);
+    }, []);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchQuery) {
-                if (page === 1) {
-                    fetchClients();
-                } else {
-                    setPage(1);
-                }
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchClients();
+    // Simular salvamento de configurações
+    const handleSaveSettings = () => {
+        setSaving(true);
+        // Simulação de chamada de API
+        setTimeout(() => {
+            setSaving(false);
+            toast.success("Configurações salvas com sucesso!");
+        }, 1000);
     };
 
-    const validateForm = () => {
-        let isValid = true;
-        const errors = {
-            name: "",
-            phone: "",
-            email: ""
-        };
-
-        if (!newClient.name || newClient.name.length < 3) {
-            errors.name = "Nome deve ter pelo menos 3 caracteres";
-            isValid = false;
-        }
-
-        if (!newClient.phone || newClient.phone.length < 8) {
-            errors.phone = "Telefone deve ter pelo menos 8 caracteres";
-            isValid = false;
-        }
-
-        if (newClient.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(newClient.email)) {
-            errors.email = "Email inválido";
-            isValid = false;
-        }
-
-        setFormErrors(errors);
-        return isValid;
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setNewClient(prev => ({ ...prev, [name]: value }));
-
-        if (formErrors[name as keyof typeof formErrors]) {
-            setFormErrors(prev => ({ ...prev, [name]: "" }));
-        }
-    };
-
-    const handleCreateClient = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            const response = await axios.post(`${API_URL}/clients`, newClient);
-
-            toast.success("Cliente criado com sucesso");
-            setIsNewClientModalOpen(false);
-            setNewClient({ name: "", phone: "", email: "" });
-            setFormErrors({ name: "", phone: "", email: "" });
-            fetchClients();
-        } catch (error: any) {
-            console.error("Error creating client:", error);
-
-            if (error.response) {
-                const status = error.response.status;
-
-                if (status === 422 && error.response.data.detail) {
-                    const apiErrors = error.response.data.detail;
-
-                    const newErrors = { name: "", phone: "", email: "" };
-                    if (Array.isArray(apiErrors)) {
-                        apiErrors.forEach((err: any) => {
-                            if (err.loc && err.loc.length > 1) {
-                                const field = err.loc[1];
-                                if (field in newErrors) {
-                                    newErrors[field as keyof typeof newErrors] = err.msg;
-                                }
-                            }
-                        });
-                    }
-
-                    setFormErrors(newErrors);
-                    toast.error("Verifique os dados do formulário");
-                } else if (status === 500) {
-                    toast.error("Erro no servidor. Tente novamente mais tarde.");
-                } else {
-                    toast.error(`Erro ao criar cliente: ${error.response.data?.detail || "Erro desconhecido"}`);
-                }
-            } else if (error.request) {
-                toast.error("Servidor indisponível. Verifique sua conexão.");
-            } else {
-                toast.error("Erro ao enviar requisição.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const formatDate = (dateStr: string) => {
-        if (!dateStr) return "Nunca";
-        try {
-            if (dateStr.includes('T')) {
-                const date = new Date(dateStr);
-                return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-            }
-            const [year, month, day] = dateStr.split('-');
-            return `${day}/${month}/${year}`;
-        } catch (error) {
-            console.error("Error formatting date:", error);
-            return "Data inválida";
-        }
-    };
+    // Evitar problemas de hidratação retornando null até que o componente esteja montado
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <AdminLayout>
             <div className="p-4 md:p-6 max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold">Clientes</h1>
-                        <p className="text-gray-500 mt-1">Gerenciar cadastro de clientes</p>
-                    </div>
-                    <div className="flex mt-4 md:mt-0 space-x-2">
-                        <Button
-                            onClick={() => setIsNewClientModalOpen(true)}
-                            className="flex items-center space-x-2"
-                        >
-                            <UserPlus size={16} />
-                            <span>Novo Cliente</span>
-                        </Button>
-                    </div>
+                <div className="flex flex-col mb-6">
+                    <h1 className="text-2xl md:text-3xl font-bold">Configurações</h1>
+                    <p className="text-gray-500 mt-1">Gerencie as configurações do sistema</p>
                 </div>
 
-                <Card className="mb-6">
-                    <div className="p-4 md:p-6">
-                        <form onSubmit={handleSearch} className="flex space-x-2">
-                            <Input
-                                type="text"
-                                placeholder="Pesquisar por nome, telefone ou email..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full md:w-[350px]"
-                            />
-                            <Button type="submit" variant="secondary">
-                                <Search size={16} />
-                            </Button>
-                        </form>
-                    </div>
-                </Card>
+                <Tabs defaultValue="appearance" className="w-full">
+                    <TabsList className="mb-4">
+                        <TabsTrigger value="appearance">Aparência</TabsTrigger>
+                        <TabsTrigger value="notifications">Notificações</TabsTrigger>
+                        <TabsTrigger value="account">Conta</TabsTrigger>
+                        <TabsTrigger value="system">Sistema</TabsTrigger>
+                    </TabsList>
 
-                <Card>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Telefone</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Última Visita</TableHead>
-                                <TableHead>Total Visitas</TableHead>
-                                <TableHead>Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center">
-                                        Carregando...
-                                    </TableCell>
-                                </TableRow>
-                            ) : clients.length > 0 ? (
-                                clients.map((client) => (
-                                    <TableRow key={client.id}>
-                                        <TableCell>{client.name}</TableCell>
-                                        <TableCell>{client.phone}</TableCell>
-                                        <TableCell>{client.email || "-"}</TableCell>
-                                        <TableCell>{formatDate(client.last_visit)}</TableCell>
-                                        <TableCell>{client.total_visits}</TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <MoreVertical size={16} />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem>
-                                                        Ver Detalhes
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        Editar
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>
-                                                        Novo Agendamento
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-red-600">
-                                                        Excluir
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center">
-                                        Nenhum cliente encontrado.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    {/* Tab de Aparência */}
+                    <TabsContent value="appearance">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Aparência</CardTitle>
+                                <CardDescription>
+                                    Personalize a aparência da interface do administrador
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-medium">Tema</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <Button
+                                            variant={theme === "light" ? "default" : "outline"}
+                                            className="flex items-center justify-center gap-2 h-20"
+                                            onClick={() => setTheme("light")}
+                                        >
+                                            <Sun className="h-5 w-5" />
+                                            <span>Claro</span>
+                                        </Button>
+                                        <Button
+                                            variant={theme === "dark" ? "default" : "outline"}
+                                            className="flex items-center justify-center gap-2 h-20"
+                                            onClick={() => setTheme("dark")}
+                                        >
+                                            <Moon className="h-5 w-5" />
+                                            <span>Escuro</span>
+                                        </Button>
+                                        <Button
+                                            variant={theme === "system" ? "default" : "outline"}
+                                            className="flex items-center justify-center gap-2 h-20"
+                                            onClick={() => setTheme("system")}
+                                        >
+                                            <Monitor className="h-5 w-5" />
+                                            <span>Sistema</span>
+                                        </Button>
+                                    </div>
+                                </div>
 
-                    <Pagination className="py-4">
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    onClick={() => page > 1 && setPage(page - 1)}
-                                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink isActive>{page}</PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationNext
-                                    onClick={() => page < totalPages && setPage(page + 1)}
-                                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
-                </Card>
+                                <Separator />
 
-                <Dialog open={isNewClientModalOpen} onOpenChange={setIsNewClientModalOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Novo Cliente</DialogTitle>
-                            <DialogDescription>
-                                Preencha os dados para cadastrar um novo cliente.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <label htmlFor="name" className="text-sm font-medium">
-                                    Nome
-                                </label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    value={newClient.name}
-                                    onChange={handleInputChange}
-                                    placeholder="Nome completo"
-                                    className={formErrors.name ? "border-red-500" : ""}
-                                />
-                                {formErrors.name && (
-                                    <p className="text-sm text-red-500 mt-1">{formErrors.name}</p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <label htmlFor="phone" className="text-sm font-medium">
-                                    Telefone
-                                </label>
-                                <Input
-                                    id="phone"
-                                    name="phone"
-                                    value={newClient.phone}
-                                    onChange={handleInputChange}
-                                    placeholder="(00) 00000-0000"
-                                    className={formErrors.phone ? "border-red-500" : ""}
-                                />
-                                {formErrors.phone && (
-                                    <p className="text-sm text-red-500 mt-1">{formErrors.phone}</p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <label htmlFor="email" className="text-sm font-medium">
-                                    Email (opcional)
-                                </label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value={newClient.email}
-                                    onChange={handleInputChange}
-                                    placeholder="email@exemplo.com"
-                                    className={formErrors.email ? "border-red-500" : ""}
-                                />
-                                {formErrors.email && (
-                                    <p className="text-sm text-red-500 mt-1">{formErrors.email}</p>
-                                )}
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsNewClientModalOpen(false)}>
-                                Cancelar
-                            </Button>
-                            <Button onClick={handleCreateClient} disabled={loading}>
-                                {loading ? "Salvando..." : "Salvar"}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-medium">Densidade de Layout</h3>
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-0.5">
+                                            <Label>Layout Compacto</Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                Reduz o espaçamento e tamanho dos elementos
+                                            </p>
+                                        </div>
+                                        <Switch />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Tab de Notificações */}
+                    <TabsContent value="notifications">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Notificações</CardTitle>
+                                <CardDescription>
+                                    Configure como você recebe notificações e alertas
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <Label>Notificações</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Ativar ou desativar todas as notificações
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={userSettings.notificationsEnabled}
+                                        onCheckedChange={(checked) =>
+                                            setUserSettings({ ...userSettings, notificationsEnabled: checked })
+                                        }
+                                    />
+                                </div>
+
+                                <Separator />
+
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <Label>Notificações por Email</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Receba atualizações por email
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={userSettings.emailNotifications}
+                                        onCheckedChange={(checked) =>
+                                            setUserSettings({ ...userSettings, emailNotifications: checked })
+                                        }
+                                        disabled={!userSettings.notificationsEnabled}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <Label>Notificações por SMS</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Receba alertas importantes por SMS
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={userSettings.smsNotifications}
+                                        onCheckedChange={(checked) =>
+                                            setUserSettings({ ...userSettings, smsNotifications: checked })
+                                        }
+                                        disabled={!userSettings.notificationsEnabled}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Tab de Conta */}
+                    <TabsContent value="account">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Informações da Conta</CardTitle>
+                                <CardDescription>
+                                    Atualize suas informações pessoais e credenciais
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Nome</Label>
+                                        <Input id="name" defaultValue="Administrador" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" type="email" defaultValue="admin@exemplo.com" />
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="current-password">Senha Atual</Label>
+                                    <Input id="current-password" type="password" />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="new-password">Nova Senha</Label>
+                                        <Input id="new-password" type="password" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="confirm-password">Confirmar Senha</Label>
+                                        <Input id="confirm-password" type="password" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="ml-auto">Atualizar Senha</Button>
+                            </CardFooter>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Tab de Sistema */}
+                    <TabsContent value="system">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Configurações do Sistema</CardTitle>
+                                <CardDescription>
+                                    Configure parâmetros gerais do sistema
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="language">Idioma</Label>
+                                    <select
+                                        id="language"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={userSettings.language}
+                                        onChange={(e) => setUserSettings({ ...userSettings, language: e.target.value })}
+                                    >
+                                        <option value="pt-BR">Português (Brasil)</option>
+                                        <option value="en-US">English (US)</option>
+                                        <option value="es">Español</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="timezone">Fuso Horário</Label>
+                                    <select
+                                        id="timezone"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        value={userSettings.timeZone}
+                                        onChange={(e) => setUserSettings({ ...userSettings, timeZone: e.target.value })}
+                                    >
+                                        <option value="America/Sao_Paulo">Brasília (GMT-3)</option>
+                                        <option value="America/New_York">Nova York (GMT-5)</option>
+                                        <option value="Europe/London">Londres (GMT+0)</option>
+                                        <option value="Europe/Paris">Paris (GMT+1)</option>
+                                    </select>
+                                </div>
+
+                                <Separator />
+
+                                <div className="space-y-2">
+                                    <Label>Backup de Dados</Label>
+                                    <Button variant="outline" className="w-full md:w-auto">
+                                        Fazer Backup
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+
+                <div className="mt-6 flex justify-end">
+                    <Button
+                        onClick={handleSaveSettings}
+                        disabled={saving}
+                        className="flex items-center space-x-2"
+                    >
+                        {saving ? (
+                            <>
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                                <span>Salvando...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4 mr-2" />
+                                <span>Salvar Todas as Configurações</span>
+                            </>
+                        )}
+                    </Button>
+                </div>
 
                 <Toaster position="bottom-right" />
             </div>
