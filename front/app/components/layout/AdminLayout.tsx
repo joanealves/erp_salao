@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 
 type NavItem = {
   name: string;
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   // Verifica o tamanho da tela para definir o estado inicial em dispositivos móveis
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); 
+    handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -95,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         variant="outline"
         size="icon"
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 left-4 z-30 lg:hidden bg-white shadow-md"
+        className="fixed top-4 left-4 z-30 lg:hidden bg-background shadow-md"
       >
         <Menu className="h-5 w-5" />
       </Button>
@@ -103,7 +105,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-white border-r transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
+          "fixed inset-y-0 left-0 z-50 bg-background border-r transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           sidebarCollapsed ? "lg:w-20" : "lg:w-64",
           "w-64" // Width for mobile
@@ -148,13 +150,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive
                         ? "bg-primary/10 text-primary"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                        : "text-foreground hover:bg-muted hover:text-foreground",
                       sidebarCollapsed ? "justify-center" : ""
                     )}
                     title={sidebarCollapsed ? item.name : ""}
                   >
                     <div className={cn(
-                      isActive ? "text-primary" : "text-gray-500",
+                      isActive ? "text-primary" : "text-muted-foreground",
                       sidebarCollapsed ? "" : "mr-3"
                     )}>
                       {item.icon}
@@ -201,7 +203,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           size="icon"
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className={cn(
-            "rounded-full bg-white shadow-md h-6 w-6 p-0 border",
+            "rounded-full bg-background shadow-md h-6 w-6 p-0 border",
             sidebarCollapsed ? "ml-16" : "ml-64"
           )}
         >
@@ -214,7 +216,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main content - without header */}
-      <div className="flex flex-col flex-1 w-full overflow-y-auto">
+      <div className="flex flex-col flex-1 w-full overflow-y-auto bg-background">
         <main className="flex-1 p-4 pt-16 lg:pt-4">
           {children}
         </main>
