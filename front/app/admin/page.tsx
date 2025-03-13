@@ -315,7 +315,7 @@ const chartData =
             icon={CalendarDays} 
             title="Agendamentos" 
             description="Gerenciar agendamentos e horários" 
-            color="blue" 
+            color="green" 
           />
           <QuickAccessCard 
             href="/admin/clients" 

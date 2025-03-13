@@ -117,12 +117,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             sidebarCollapsed ? "justify-center" : "justify-between"
           )}>
             {!sidebarCollapsed && (
-              <Link href="/admin" className="font-bold text-lg truncate">
+              <Link href="/admin" className="font-bold text-green-600 text-lg truncate">
                 Salão Admin
               </Link>
             )}
             {sidebarCollapsed && (
-              <Link href="/admin" className="font-bold text-lg">
+              <Link href="/admin" className="font-bold  text-green-600 text-lg">
                 SA
               </Link>
             )}
@@ -149,14 +149,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     className={cn(
                       "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-muted hover:text-foreground",
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" 
+                        : "text-foreground hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-100", 
                       sidebarCollapsed ? "justify-center" : ""
                     )}
                     title={sidebarCollapsed ? item.name : ""}
                   >
                     <div className={cn(
-                      isActive ? "text-primary" : "text-muted-foreground",
+                      isActive ? "text-green-600 dark:text-green-400" : "text-muted-foreground", 
                       sidebarCollapsed ? "" : "mr-3"
                     )}>
                       {item.icon}
