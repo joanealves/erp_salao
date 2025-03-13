@@ -14,7 +14,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Salon management",
-  description: "O melhor gestor de salõe",
+  description: "O melhor gestor de salões",
+  manifest: "/manifest.json",
+  themeColor: "#ffffff",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Salon Management",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    apple: [
+      { url: "/icons/apple-icon-180x180.png", sizes: "180x180", type: "image/png" }
+    ],
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" }
+    ]
+  }
 };
 
 export default function RootLayout({
@@ -23,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
