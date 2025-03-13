@@ -84,11 +84,11 @@ export default function AdminCalendar({ initialAppointments }: { initialAppointm
           </TabsList>
           {view === "day" && (
             <div className="flex items-center space-x-2">
-              <button onClick={() => navigateDay("prev")} className="p-1 rounded-full hover:bg-gray-100">
+              <button onClick={() => navigateDay("prev")} className="p-1 rounded-full hover:bg-gray-100" aria-label="Botão de navegar prev e next">
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="text-sm font-medium">{formatDate(date)}</span>
-              <button onClick={() => navigateDay("next")} className="p-1 rounded-full hover:bg-gray-100">
+              <button onClick={() => navigateDay("next")} className="p-1 rounded-full hover:bg-gray-100" aria-label="Botão de navegar voltar">
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>

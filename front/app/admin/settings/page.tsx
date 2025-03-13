@@ -69,6 +69,7 @@ export default function SettingsPage() {
                                     <Button
                                         variant={theme === "light" ? "default" : "outline"}
                                         className="flex items-center justify-center gap-2 h-20"
+                                        aria-label="Botão selecionar tema, este é ligth"
                                         onClick={() => setTheme("light")}
                                     >
                                         <Sun className="h-5 w-5" />
@@ -77,6 +78,7 @@ export default function SettingsPage() {
                                     <Button
                                         variant={theme === "dark" ? "default" : "outline"}
                                         className="flex items-center justify-center gap-2 h-20"
+                                        aria-label="Botão selecionar tema, este é dark"
                                         onClick={() => setTheme("dark")}
                                     >
                                         <Moon className="h-5 w-5" />
@@ -85,6 +87,7 @@ export default function SettingsPage() {
                                     <Button
                                         variant={theme === "system" ? "default" : "outline"}
                                         className="flex items-center justify-center gap-2 h-20"
+                                        aria-label="Botão selecionar tema, este é sistema"
                                         onClick={() => setTheme("system")}
                                     >
                                         <Monitor className="h-5 w-5" />
@@ -213,7 +216,7 @@ export default function SettingsPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button className="ml-auto">Atualizar Senha</Button>
+                                <Button className="ml-auto" aria-label="Botão atualizar senha">Atualizar Senha</Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
@@ -274,7 +277,8 @@ export default function SettingsPage() {
                 <Button
                     onClick={handleSaveSettings}
                     disabled={saving}
-                    className="flex items-center space-x-2"
+                        className="flex items-center space-x-2"
+                        aria-label="Botão salvar senha"    
                 >
                     {saving ? (
                         <>

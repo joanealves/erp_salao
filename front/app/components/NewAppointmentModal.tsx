@@ -105,7 +105,7 @@ const appointmentData: AppointmentCreatePayload = {
         <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
 
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button aria-label="Botão para Confirmar Agendamento " onClick={handleSubmit} disabled={loading}>
             {loading ? "Carregando..." : "Confirmar"}
           </Button>
         </DialogFooter>

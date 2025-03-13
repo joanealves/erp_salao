@@ -80,6 +80,7 @@ export default function SettingsPage() {
                                         <Button
                                             variant={theme === "light" ? "default" : "outline"}
                                             className="flex items-center justify-center gap-2 h-20"
+                                            aria-label="Botão selecionar tema, este é ligth"
                                             onClick={() => setTheme("light")}
                                         >
                                             <Sun className="h-5 w-5" />
@@ -88,6 +89,7 @@ export default function SettingsPage() {
                                         <Button
                                             variant={theme === "dark" ? "default" : "outline"}
                                             className="flex items-center justify-center gap-2 h-20"
+                                            aria-label="Botão selecionar tema, este é dark"
                                             onClick={() => setTheme("dark")}
                                         >
                                             <Moon className="h-5 w-5" />
@@ -96,6 +98,7 @@ export default function SettingsPage() {
                                         <Button
                                             variant={theme === "system" ? "default" : "outline"}
                                             className="flex items-center justify-center gap-2 h-20"
+                                            aria-label="Botão selecionar tema, este é o sistema"
                                             onClick={() => setTheme("system")}
                                         >
                                             <Monitor className="h-5 w-5" />
@@ -224,7 +227,7 @@ export default function SettingsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button className="ml-auto">Atualizar Senha</Button>
+                                <Button className="ml-auto" aria-label="Botão Atualiza a Senha">Atualizar Senha</Button>
                             </CardFooter>
                         </Card>
                     </TabsContent>
@@ -272,7 +275,7 @@ export default function SettingsPage() {
 
                                 <div className="space-y-2">
                                     <Label>Backup de Dados</Label>
-                                    <Button variant="outline" className="w-full md:w-auto">
+                                    <Button variant="outline" className="w-full md:w-auto" aria-label="Botão realiza o backup dos clientes">
                                         Fazer Backup
                                     </Button>
                                 </div>
@@ -286,6 +289,7 @@ export default function SettingsPage() {
                         onClick={handleSaveSettings}
                         disabled={saving}
                         className="flex items-center space-x-2"
+                        aria-label="Botão é para Salvar"
                     >
                         {saving ? (
                             <>

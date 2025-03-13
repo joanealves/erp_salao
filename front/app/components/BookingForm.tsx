@@ -212,6 +212,7 @@ const BookingForm = () => {
               <Button 
                 type="submit" 
                 className="w-full h-12 mt-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                aria-label="Botão de Confirmar Agendamento"
                 disabled={isLoading}
               >
                 {isLoading ? "Processando..." : "Confirmar Agendamento"}

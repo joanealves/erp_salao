@@ -137,15 +137,15 @@ export default function ReportsPage() {
                         <p className="text-gray-500 mt-1">Análises detalhadas do seu negócio</p>
                     </div>
                     <div className="flex mt-4 md:mt-0 space-x-2">
-                        <Button onClick={handlePrint} variant="outline" className="flex items-center space-x-2">
+                        <Button onClick={handlePrint} variant="outline" className="flex items-center space-x-2" aria-label="Botão para impressão do relatório">
                             <Printer size={16} />
                             <span>Imprimir</span>
                         </Button>
-                        <Button onClick={exportToPDF} className="flex items-center space-x-2">
+                        <Button onClick={exportToPDF} className="flex items-center space-x-2" aria-label="Botão para exportar relatório em PDF">
                             <Download size={16} />
                             <span>Exportar PDF</span>
                         </Button>
-                        <Button onClick={exportToCSV} className="flex items-center space-x-2">
+                        <Button onClick={exportToCSV} className="flex items-center space-x-2" aria-label="Botão Exportar relatório em CSV">
                             <Download size={16} />
                             <span>Exportar CSV</span>
                         </Button>

@@ -14,7 +14,7 @@ const Header = () => {
       {/* Logo e Nome */}
       <div className="flex items-center space-x-3">
         <Image src={Logo} alt="Logo" width={40} height={40} />
-        <Link href="/" className="text-2xl font-bold text-white">
+        <Link href="/" className="text-2xl font-bold text-gray-400">
           Beauty Salon
         </Link>
       </div>
@@ -31,14 +31,14 @@ const Header = () => {
       </nav>
 
       {/* Botão do menu mobile */}
-      <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+      <button className="md:hidden text-white" aria-label="Botão de abrir e fechar" onClick={() => setIsOpen(!isOpen)}>
         <FaBars size={24} />
       </button>
 
       {/* Menu Mobile */}
       {isOpen && (
         <div className="fixed inset-0 bg-gray-900/90 flex flex-col items-center justify-center text-xl space-y-6 md:hidden text-white">
-          <button className="absolute top-6 right-6 text-white" onClick={() => setIsOpen(false)}>
+          <button className="absolute top-6 right-6 text-white" aria-label="Botão de abrir e fechar" onClick={() => setIsOpen(false)}>
             <FaTimes size={28} />
           </button>
           <Link href="#services" className="hover:text-green-400" onClick={() => setIsOpen(false)}>Serviços</Link>

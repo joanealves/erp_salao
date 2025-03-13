@@ -185,7 +185,7 @@ const chartData =
               <SelectItem value="month">Mês</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={exportToCSV}>
+          <Button variant="outline" aria-label="Opção para exportar arquivos em CSV" onClick={exportToCSV}>
             <Download className="h-4 w-4 mr-2" />
             <span className="hidden md:inline">Exportar</span>
           </Button>
@@ -219,6 +219,7 @@ const chartData =
                   <Button 
                     variant={chartType === "line" ? "default" : "outline"} 
                     size="sm"
+                    aria-label="Botão para selecionar os tipos de graficos se de linha "
                     onClick={() => setChartType("line")}
                   >
                     <BarChart3 className="h-4 w-4" />
@@ -226,6 +227,7 @@ const chartData =
                   <Button 
                     variant={chartType === "bar" ? "default" : "outline"} 
                     size="sm"
+                    aria-label="Botão para selecionar os tipos de graficos, neste caso de barras"
                     onClick={() => setChartType("bar")}
                   >
                     <BarChart3 className="h-4 w-4" />
@@ -372,7 +374,7 @@ const chartData =
             </table>
           </div>
           <div className="mt-4 text-center">
-            <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" aria-label="Botão de visualizar todos os agendamentos> redirecionamento de tab">
               <Link href="/admin/appointments">Ver Todos</Link>
             </Button>
           </div>

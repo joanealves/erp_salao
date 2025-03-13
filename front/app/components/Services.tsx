@@ -106,7 +106,7 @@ const Services = () => {
                 </CardHeader>
                 <CardContent>
                   <DialogTrigger asChild>
-                    <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-300 w-full">
+                    <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-300 w-full" aria-label="Botão para ver detalhes dos serviços">
                       Ver detalhes
                     </button>
                   </DialogTrigger>
@@ -134,7 +134,7 @@ const Services = () => {
               Economize com nossos pacotes exclusivos que combinam diferentes serviços para uma experiência completa de beleza.
             </p>
             <DialogTrigger asChild>
-              <button className="px-6 py-3 bg-white text-green-800 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-300 shadow-md">
+              <button className="px-6 py-3 bg-white text-green-800 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-300 shadow-md" aria-label="Botão para conhecer os pacotes de serviços">
                 Conheça nossos pacotes
               </button>
             </DialogTrigger>

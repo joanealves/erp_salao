@@ -186,7 +186,8 @@ export default function ServicesPage() {
                         variant="outline"
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className="flex items-center space-x-2"
+                            className="flex items-center space-x-2"
+                            aria-label="Botão cadatrar e gerenciar servicos"
                     >
                         {refreshing ? (
                             <>
@@ -201,6 +202,7 @@ export default function ServicesPage() {
                         )}
                     </Button>
                     <Button
+                            aria-label="Botão novo servico"
                         onClick={() => {
                             resetForm();
                             setIsAddSheetOpen(true);
@@ -324,10 +326,10 @@ export default function ServicesPage() {
                         </div>
                     </div>
                     <SheetFooter>
-                        <Button variant="outline" onClick={() => setIsAddSheetOpen(false)}>
+                            <Button variant="outline" aria-label="Botão Cancelar" onClick={() => setIsAddSheetOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleAddService}>Salvar</Button>
+                        <Button aria-label="Botão Salvar" onClick={handleAddService}>Salvar</Button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
@@ -387,10 +389,10 @@ export default function ServicesPage() {
                         </div>
                     </div>
                     <SheetFooter>
-                        <Button variant="outline" onClick={() => setIsEditSheetOpen(false)}>
+                            <Button variant="outline" aria-label="Botão selecionar tema, este é ligth" onClick={() => setIsEditSheetOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleUpdateService}>Atualizar</Button>
+                        <Button aria-label="Botão Atualizar serviços" onClick={handleUpdateService}>Atualizar</Button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
@@ -405,7 +407,7 @@ export default function ServicesPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex justify-end gap-2 p-4">
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                            <Button variant="outline" aria-label="Botão cancelar serviços" onClick={() => setIsDeleteDialogOpen(false)}>
                             Cancelar
                         </Button>
                         <Button
