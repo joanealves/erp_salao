@@ -101,10 +101,10 @@ const BookingForm = () => {
 
   return (
     <>
-      <div id="booking" className="bg-gradient-to-r from-green-50 to-green-100 py-12 px-4 rounded-lg my-8">  
+      <div id="booking" className="bg-gradient-to-br from-slate-900 to-green-300 py-12 px-4 ">  
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-green-600 mb-2">Agende seu horário</h2>
-          <p className="text-gray-600 max-w-md mx-auto">Escolha o serviço e horário de sua preferência para garantir seu atendimento</p>
+          <p className="text-slate-100 max-w-md mx-auto">Escolha o serviço e horário de sua preferência para garantir seu atendimento</p>
         </div>
         
         <div className="max-w-md mx-auto">

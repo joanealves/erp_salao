@@ -6,7 +6,7 @@ const Contact = () => {
       <div className="max-w-6xl mx-auto px-4 py-16 md:py-20">
         {/* Cabeçalho da seção */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+          <h2 className="text-3xl text-white md:text-4xl font-bold mb-4 relative inline-block">
             Entre em Contato
             <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-green-500 rounded-full"></span>
           </h2>
@@ -22,7 +22,7 @@ const Contact = () => {
             <div className="bg-green-600 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Phone size={24} className="text-white" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Telefone</h3>
+            <h3 className="text-xl   text-green-600 font-semibold mb-2">Telefone</h3>
             <p className="text-gray-400">(11) 99999-9999</p>
             <p className="text-gray-400 mt-1">Segunda a Sábado</p>
           </div>
@@ -32,7 +32,7 @@ const Contact = () => {
             <div className="bg-green-600 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Mail size={24} className="text-white" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Email</h3>
+            <h3 className="text-xl  text-green-600 font-semibold mb-2">Email</h3>
             <p className="text-gray-400">contato@salon.com</p>
             <p className="text-gray-400 mt-1">Respondemos em até 24h</p>
           </div>
@@ -42,7 +42,7 @@ const Contact = () => {
             <div className="bg-green-600 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <MapPin size={24} className="text-white" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Endereço</h3>
+            <h3 className="text-xl  text-green-600 font-semibold mb-2">Endereço</h3>
             <p className="text-gray-400">Rua Exemplo, 123</p>
             <p className="text-gray-400 mt-1">São Paulo, SP</p>
           </div>
@@ -54,7 +54,7 @@ const Contact = () => {
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
             <div className="flex items-center mb-4">
               <Clock size={24} className="text-green-500 mr-3" />
-              <h3 className="text-xl font-semibold">Horário de Funcionamento</h3>
+              <h3 className="text-xl  text-green-600 font-semibold">Horário de Funcionamento</h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
@@ -74,7 +74,7 @@ const Contact = () => {
 
           {/* Redes Sociais */}
           <div>
-            <h3 className="text-xl font-semibold mb-4">Siga-nos nas Redes Sociais</h3>
+            <h3 className="text-xl  text-green-600 font-semibold mb-4">Siga-nos nas Redes Sociais</h3>
             <div className="flex justify-center md:justify-start space-x-4">
               <a href="#" className="bg-gray-800 hover:bg-green-600 p-3 rounded-full transition-colors duration-300">
                 <Instagram size={24} />

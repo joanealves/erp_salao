@@ -75,7 +75,7 @@ const Services = () => {
       <div className="max-w-6xl mx-auto px-4">
         {/* Cabeçalho da seção */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+          <h2 className="text-3xl text-white md:text-4xl font-bold mb-4 relative inline-block">
             Nossos Serviços
             <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-green-500 rounded-full"></span>
           </h2>
@@ -89,7 +89,6 @@ const Services = () => {
           {services.map((service, index) => (
             <Dialog key={index}>
               <Card className="bg-gray-800 border border-gray-700 hover:border-green-500 transition-all duration-300">
-                {/* Imagem do serviço */}
                 <div className="relative h-48 overflow-hidden rounded-t-lg">
                   <Image
                     src={service.image}
@@ -130,7 +129,7 @@ const Services = () => {
         {/* Seção de destaque para pacotes */}
         <Dialog>
           <div className="mt-16 bg-gradient-to-r from-green-900 to-green-800 rounded-xl p-8 text-center shadow-xl">
-            <h3 className="text-2xl font-bold mb-4">Pacotes Especiais</h3>
+            <h3 className="text-2xl  text-slate-100 font-bold mb-4">Pacotes Especiais</h3>
             <p className="text-gray-300 max-w-2xl mx-auto mb-6">
               Economize com nossos pacotes exclusivos que combinam diferentes serviços para uma experiência completa de beleza.
             </p>

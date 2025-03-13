@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -41,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Configura o estado inicial
+    handleResize(); 
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
