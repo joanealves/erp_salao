@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+
+import AdminLayout  from "../../components/layout/AdminLayout";
+
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -123,6 +126,7 @@ export default function ClientsPage() {
     };
 
     return (
+        <AdminLayout>  
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6">
                 <div>
@@ -305,5 +309,6 @@ export default function ClientsPage() {
 
             <Toaster position="bottom-right" />
         </div>
+        </AdminLayout>  
     );
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
+import AdminLayout  from "../../components/layout/AdminLayout";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -95,6 +98,7 @@ export default function ReportsPage() {
     };
 
     return (
+        <AdminLayout>  
         <div className="p-4 md:p-6 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 md:mb-6">
                 <div>
@@ -310,6 +314,7 @@ export default function ReportsPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+            </div>
+        </AdminLayout>    
     );
 }
