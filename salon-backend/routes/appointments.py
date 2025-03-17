@@ -206,9 +206,25 @@ async def create_appointment(appointment: AppointmentCreate):
         print(f"Error creating appointment: {str(e)}")
         print(traceback.format_exc())
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create appointment: {str(e)}"
-        )@router.put("/{appointment_id}", response_model=Appointment)
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=f"Failed to create appointment: {str(e)}"
+    )
+
+@router.put("/{appointment_id}", response_model=Appointment)
+async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
+    # Verificar se o agendamento existe
+    existing = select_by_id("appointments", appointment_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    # Atualizar apenas campos não nulos
+    update_data = {k: v for k, v in appointment.dict().items() if v is not None}
+
+    result = update("appointments", appointment_id, update_data)
+    return result
+
+
+    
 async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
     # Verificar se o agendamento existe
     existing = select_by_id("appointments", appointment_id)
