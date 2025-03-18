@@ -67,14 +67,13 @@ const BookingForm = () => {
       }
 
       const appointmentData: AppointmentCreatePayload = {
-        service: selectedServiceObject.name,  
-        date,
-        time,
-        name,  
-        phone,
-        client_id: clientId,
-      };
-
+          service: selectedServiceObject.name,  
+          date,
+          time,
+          name,  
+          phone: cleanPhone(phone),  // Envia o telefone sem formatação
+          client_id: clientId,
+        };
       console.log("Dados enviados:", appointmentData);
       
       const success = await createAppointment(appointmentData);
@@ -98,6 +97,30 @@ const BookingForm = () => {
       setIsLoading(false);
     }
   };
+    const formatPhone = (value: string) => {
+  const numbers = value.replace(/\D/g, "");
+
+  if (numbers.length <= 11) {
+    let formatted = numbers;
+    if (numbers.length > 2) {
+      formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    }
+    if (numbers.length > 7) {
+      formatted = `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    }
+    return formatted;
+  }
+  return value;
+};
+
+const cleanPhone = (value: string) => {
+  return value.replace(/\D/g, "");
+};
+
+const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const formattedPhone = formatPhone(e.target.value);
+  setPhone(formattedPhone);
+};
 
   return (
     <>
@@ -184,13 +207,13 @@ const BookingForm = () => {
                 <label className="block text-sm font-medium text-gray-700">Telefone *</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <Input 
+                  <Input
                     className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                    type="tel" 
-                    placeholder="(00) 00000-0000" 
-                    value={phone} 
-                    onChange={(e) => setPhone(e.target.value)} 
-                    required 
+                    type="tel"
+                    placeholder="(00) 00000-0000"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    required
                   />
                 </div>
               </div>
