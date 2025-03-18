@@ -7,8 +7,10 @@ class ClientBase(BaseModel):
     phone: str = Field(..., min_length=8, description="Número de telefone do cliente")
     email: Optional[str] = Field(None, pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", description="Email do cliente")  
 
-class ClientCreate(ClientBase):
-    pass
+class ClientCreate(BaseModel):
+    name: str
+    phone: str
+    email: Optional[str] = None 
 
 class Client(ClientBase):
     id: int

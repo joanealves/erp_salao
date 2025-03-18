@@ -69,19 +69,28 @@ async def get_client(client_id: int):
         client['last_visit'] = client['last_visit'].isoformat()
         
     return client
-
 @router.post("/", response_model=ClientResponse)
 async def create_client(client: ClientCreate):
-    # Converter o modelo para dicionário
-    client_data = client.model_dump()
-    
-    # Inserir no banco de dados
-    result = db.insert("clients", client_data)
-    if not result:
-        raise HTTPException(status_code=500, detail="Falha ao criar cliente")
-    
-    # Formatar datas para resposta
-    if 'created_at' in result and result['created_at']:
-        result['created_at'] = result['created_at'].isoformat()
-    
-    return result
+    try:
+        client_data = client.model_dump()
+
+        # Garantir que email pode ser NULL no banco
+        if not client_data.get("email"):
+            client_data["email"] = None
+
+        print(f"Recebendo cliente: {client_data}")  # Debug para ver os dados antes do insert
+
+        result = db.insert("clients", client_data)
+        if not result:
+            raise HTTPException(status_code=500, detail="Falha ao criar cliente")
+
+
+        # Formatar datas para resposta
+        if 'created_at' in result and result['created_at']:
+            result['created_at'] = result['created_at'].isoformat()
+
+        return result
+
+    except Exception as e:
+        print("Erro ao criar cliente:", str(e))
+        raise HTTPException(status_code=500, detail=f"Erro ao criar cliente: {str(e)}")
