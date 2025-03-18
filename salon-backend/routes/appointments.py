@@ -1,21 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List, Optional
-from datetime import datetime
-from models.appointment import Appointment, AppointmentCreate, AppointmentUpdate
-import traceback
-from database import (
-    select_all,
-    select_by_id,
-    insert,
-    update,
-    delete,
-    execute_raw,
-    select_count,
-)
-
-router = APIRouter()
-from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List, Optional
 from datetime import datetime, date, timedelta
 from models.appointment import Appointment, AppointmentCreate, AppointmentUpdate
 import traceback
@@ -164,20 +148,51 @@ async def create_appointment(appointment: AppointmentCreate):
         # Convert string data to appropriate database types
         appointment_data = appointment.dict(exclude_unset=True)
         
+        # Validar campos obrigatórios
+        required_fields = ['service', 'date', 'time', 'name', 'phone']
+        for field in required_fields:
+            if field not in appointment_data or not appointment_data[field]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"O campo '{field}' é obrigatório"
+                )
+        
         # Convert date string to date object
         if isinstance(appointment_data.get('date'), str):
-            appointment_data['date'] = datetime.strptime(appointment_data['date'], "%Y-%m-%d").date()
+            try:
+                appointment_data['date'] = datetime.strptime(appointment_data['date'], "%Y-%m-%d").date()
+            except ValueError as e:
+                print(f"Data format error: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Formato de data inválido. Use YYYY-MM-DD: {str(e)}"
+                )
         
         # Convert time string to timedelta object
         if isinstance(appointment_data.get('time'), str):
-            time_parts = appointment_data['time'].split(":")
-            hours = int(time_parts[0])
-            minutes = int(time_parts[1])
-            appointment_data['time'] = timedelta(hours=hours, minutes=minutes)
+            try:
+                time_parts = appointment_data['time'].split(":")
+                if len(time_parts) != 2:
+                    raise ValueError("Formato de hora inválido")
+                    
+                hours = int(time_parts[0])
+                minutes = int(time_parts[1])
+                appointment_data['time'] = timedelta(hours=hours, minutes=minutes)
+            except (ValueError, IndexError) as e:
+                print(f"Time format error: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Formato de hora inválido. Use HH:MM: {str(e)}"
+                )
         
         # Set default status if not provided
         if 'status' not in appointment_data:
             appointment_data['status'] = 'pending'
+            
+        # Garantir que client_id seja None se não for fornecido
+        if 'client_id' in appointment_data and appointment_data['client_id'] is None:
+            appointment_data['client_id'] = None  # Garantir que seja tratado corretamente no banco
+
             
         print(f"Processed data for database: {appointment_data}")
         
@@ -187,7 +202,7 @@ async def create_appointment(appointment: AppointmentCreate):
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create appointment"
+                detail="Falha ao criar agendamento"
             )
             
         # Format the response
@@ -202,14 +217,16 @@ async def create_appointment(appointment: AppointmentCreate):
             
         return result
         
+    except HTTPException as he:
+        raise he  # Re-lançar exceções HTTP já formatadas
     except Exception as e:
         print(f"Error creating appointment: {str(e)}")
         print(traceback.format_exc())
         raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail=f"Failed to create appointment: {str(e)}"
-    )
-
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Falha ao criar agendamento: {str(e)}"
+        )
+    
 @router.put("/{appointment_id}", response_model=Appointment)
 async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
     # Verificar se o agendamento existe
@@ -222,21 +239,6 @@ async def update_appointment(appointment_id: int, appointment: AppointmentUpdate
 
     result = update("appointments", appointment_id, update_data)
     return result
-
-
-    
-async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
-    # Verificar se o agendamento existe
-    existing = select_by_id("appointments", appointment_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-
-    # Atualizar apenas campos não nulos
-    update_data = {k: v for k, v in appointment.dict().items() if v is not None}
-
-    result = update("appointments", appointment_id, update_data)
-    return result
-
 
 @router.delete("/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_appointment(appointment_id: int):
