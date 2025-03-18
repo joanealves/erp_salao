@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Search, RefreshCw, Users, Plus, MoreVertical } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -140,6 +140,13 @@ export default function ClientsPage() {
         return date.toLocaleDateString('pt-BR');
     };
 
+    const payload = {
+        name: formData.name.trim(),
+        phone: formData.phone.replace(/\D/g, ""), 
+        email: formData.email.trim() || null, 
+    };
+
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({
@@ -150,18 +157,27 @@ export default function ClientsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         try {
-            await axios.post(`${API_URL}/clients`, formData);
+            const payload = {
+                name: formData.name.trim(),
+                phone: formData.phone.replace(/\D/g, ""),
+                email: formData.email.trim() || null,
+            };
+
+            await axios.post(`${API_URL}/clients`, payload);
             setIsNewClientOpen(false);
             setFormData({ name: "", phone: "", email: "" });
             fetchClients();
             toast.success("Cliente cadastrado com sucesso!");
         } catch (error) {
-            console.error("Error creating client:", error);
-            toast.error("Erro ao cadastrar cliente. Tente novamente.");
+            const axiosError = error as AxiosError<{ detail?: string }>;
+
+            console.error("Erro ao cadastrar cliente:", axiosError);
+            toast.error(axiosError.response?.data?.detail || "Erro ao cadastrar cliente. Tente novamente.");
         }
     };
-
+    
     return (
         <AdminLayout>
             <div className="p-4 md:p-6 max-w-7xl mx-auto">
