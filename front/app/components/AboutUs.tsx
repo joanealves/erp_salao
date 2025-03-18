@@ -45,7 +45,6 @@ const AboutUs = () => {
             <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-xl">
               <div className="relative w-full h-full bg-gray-300 flex items-center justify-center">
                               <p className="text-gray-500">Imagem do Salão</p>
-                Se estiver usando Next.js:
                 <Image 
                   src={salon} 
                   alt="Interior do nosso salão"

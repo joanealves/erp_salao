@@ -55,15 +55,15 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
     setIsLoading(true);
 
     try {
-      // Primeiro, buscar cliente pelo telefone sem formatação
       const cleanedPhone = cleanPhone(phone);
+      // Busca clientes usando o telefone limpo
       const clients = await fetchClients(cleanedPhone);
-      let clientId: number | undefined;
+
+      // Inicializa clientId como null explicitamente 
+      let clientId: number | null = null;
 
       if (clients && clients.length > 0) {
         clientId = clients[0].id;
-      } else {
-        clientId = undefined;
       }
 
       const selectedServiceObject = services.find(s => s.id === Number(selectedService));
@@ -74,13 +74,20 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
         return;
       }
 
+      // Certifique-se de que o formato da data está correto (YYYY-MM-DD)
+      const formattedDate = date; // Assumindo que já está no formato correto
+
+      // Certifique-se de que o formato da hora está correto (HH:MM)
+      const formattedTime = time; // Assumindo que já está no formato correto
+
+      // Crie o payload exatamente como no BookingForm
       const appointmentData: AppointmentCreatePayload = {
         service: selectedServiceObject.name,
-        date,
-        time,
+        date: formattedDate,
+        time: formattedTime,
         name,
         phone: cleanedPhone,
-        client_id: clientId || null,
+        client_id: clientId  // Sem definir status explicitamente, como no BookingForm
       };
 
       console.log("Dados a serem enviados:", appointmentData);
@@ -89,7 +96,6 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
 
       if (success) {
         toast.success("Agendamento realizado com sucesso!");
-        // Limpar formulário
         resetForm();
         onSuccess();
         onClose();

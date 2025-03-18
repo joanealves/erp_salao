@@ -23,7 +23,6 @@ const Hero = () => {
       {/* Gradiente de fundo para contraste */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-gray-900/30"></div>
 
-      {/* Imagem de fundo */}
       <Image
         src={heroImage}
         alt="Imagem de um salão de beleza"

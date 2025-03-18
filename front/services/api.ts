@@ -1,11 +1,10 @@
-
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const api = axios.create({
   baseURL: API_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json" }
 });
 
 export interface Service {
@@ -22,14 +21,13 @@ export interface Client {
   email?: string;
 }
 
-
 export interface AppointmentCreatePayload {
   service: string;
   date: string;
   time: string;
   name: string;
   phone: string;
-  client_id?: number | null; 
+  client_id?: number | null;
   status?: string;
 }
 
@@ -57,8 +55,9 @@ export async function fetchClients(search?: string): Promise<Client[]> {
   }
 }
 
-
-export async function createAppointment(appointmentData: AppointmentCreatePayload): Promise<boolean> {
+export async function createAppointment(
+  appointmentData: AppointmentCreatePayload
+): Promise<boolean> {
   try {
     console.log("Enviando para API:", appointmentData);
 
@@ -69,10 +68,26 @@ export async function createAppointment(appointmentData: AppointmentCreatePayloa
         return false;
       }
     }
-    // Make sure all fields are in the correct format
-    const formattedData = { ...appointmentData, date: appointmentData.date, time: appointmentData.time, client_id: appointmentData.client_id || null, status: appointmentData.status || "pending" }; // Ensure date is in YYYY-MM-DD format // Ensure time is in HH:MM format // Set client_id to null if undefined or empty string // Add status if not provided
 
-    const response = await axios.post(`${API_URL}/appointments/`, formattedData);
+    // Format data properly for the API
+    const formattedData = {
+      ...appointmentData,
+      date: appointmentData.date,
+      time: appointmentData.time,
+      // Explicitly set client_id to null if it's undefined
+      client_id:
+        appointmentData.client_id === undefined
+          ? null
+          : appointmentData.client_id,
+      status: appointmentData.status || "pending"
+    };
+
+    console.log("Dados formatados para API:", formattedData);
+
+    const response = await axios.post(
+      `${API_URL}/appointments/`,
+      formattedData
+    );
     console.log("Resposta do servidor:", response.data);
     return response.status === 200 || response.status === 201;
   } catch (error) {
@@ -81,6 +96,6 @@ export async function createAppointment(appointmentData: AppointmentCreatePayloa
       console.error("Detalhes do erro:", error.response.data);
       console.error("Status do erro:", error.response.status);
     }
-    return false;
+    throw error; // Re-throw the error so it can be handled by the component
   }
 }
