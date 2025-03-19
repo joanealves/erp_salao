@@ -10,8 +10,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Client } from "../types";
-import { formatDate } from "../utils/formatters";
+import { Client } from "../../app/admin/clients/types";
+import { formatDate } from "../../app/admin/clients/utils/formatters";
 
 type ClientsTableProps = {
     clients: Client[];
