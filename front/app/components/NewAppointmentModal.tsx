@@ -34,6 +34,8 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
   useEffect(() => {
     if (isOpen) {
       loadServices();
+      // Reset form when modal opens
+      resetForm();
     }
   }, [isOpen]);
 
@@ -56,13 +58,12 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
 
     try {
       const cleanedPhone = cleanPhone(phone);
-      // Busca clientes usando o telefone limpo
       const clients = await fetchClients(cleanedPhone);
 
-      // Inicializa clientId como null explicitamente 
+      // Explicitly set clientId to null if no clients found
       let clientId: number | null = null;
 
-      if (clients && clients.length > 0) {
+      if (clients.length > 0) {
         clientId = clients[0].id;
       }
 
@@ -74,23 +75,16 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
         return;
       }
 
-      // Certifique-se de que o formato da data está correto (YYYY-MM-DD)
-      const formattedDate = date; // Assumindo que já está no formato correto
-
-      // Certifique-se de que o formato da hora está correto (HH:MM)
-      const formattedTime = time; // Assumindo que já está no formato correto
-
-      // Crie o payload exatamente como no BookingForm
       const appointmentData: AppointmentCreatePayload = {
         service: selectedServiceObject.name,
-        date: formattedDate,
-        time: formattedTime,
+        date,
+        time,
         name,
-        phone: cleanedPhone,
-        client_id: clientId  // Sem definir status explicitamente, como no BookingForm
+        phone: cleanedPhone,  // Send phone without formatting
+        client_id: clientId,  // Explicitly null or a number
       };
 
-      console.log("Dados a serem enviados:", appointmentData);
+      console.log("Dados enviados:", appointmentData);
 
       const success = await createAppointment(appointmentData);
 
@@ -163,7 +157,7 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Serviço *</label>
             <div className="relative">
-              <Select value={selectedService} onValueChange={setSelectedService} required>
+              <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger className="w-full pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors">
                   <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
@@ -187,7 +181,6 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -201,7 +194,6 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -217,7 +209,6 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
                 placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
               />
             </div>
           </div>
@@ -232,7 +223,6 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
                 placeholder="(00) 00000-0000"
                 value={phone}
                 onChange={handlePhoneChange}
-                required
               />
             </div>
           </div>
