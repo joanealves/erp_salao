@@ -163,6 +163,7 @@ export default function AppointmentsPage() {
                 loading={loading}
                 onViewDetails={openAppointmentDetails}
                 onUpdateStatus={updateStatus}
+                onRefresh={handleRefresh}
               />
             </Card>
 
