@@ -26,6 +26,18 @@ import {
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
+
+interface CustomizedLabelProps {
+        cx: number;
+        cy: number;
+        midAngle: number;
+        innerRadius: number;
+        outerRadius: number;
+        percent: number;
+        index: number;
+        name?: string; 
+}
+
 export default function ReportsPage() {
     const [timeFrame, setTimeFrame] = useState("month");
     const [reportType, setReportType] = useState("revenue");
@@ -89,17 +101,6 @@ export default function ReportsPage() {
                 reportType === "services" ? servicesData :
                     clientsData;
 
-
-    interface CustomizedLabelProps {
-        cx: number;
-        cy: number;
-        midAngle: number;
-        innerRadius: number;
-        outerRadius: number;
-        percent: number;
-        index: number;
-        name?: string; 
-    }
 
     // Função customizada para renderizar labels do gráfico de pizza
     const renderCustomizedLabel = ({
