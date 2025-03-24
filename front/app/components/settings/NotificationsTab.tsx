@@ -8,6 +8,7 @@ type UserSettings = {
     smsNotifications: boolean;
     language: string;
     timeZone: string;
+    compactLayout?: boolean;
 };
 
 type NotificationsTabProps = {

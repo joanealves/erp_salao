@@ -4,7 +4,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-export default function AccountTab() {
+type UserSettings = {
+    notificationsEnabled: boolean;
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    language: string;
+    timeZone: string;
+    compactLayout?: boolean;
+};
+
+type AccountTabProps = {
+    userSettings: UserSettings;
+    setUserSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
+};
+
+export default function AccountTab({ userSettings, setUserSettings }: AccountTabProps) {
     return (
         <Card>
             <CardHeader>

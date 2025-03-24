@@ -5,9 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 
-export default function AppearanceTab() {
+type UserSettings = {
+    notificationsEnabled: boolean;
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    language: string;
+    timeZone: string;
+    compactLayout?: boolean;
+};
+
+type AppearanceTabProps = {
+    userSettings: UserSettings;
+    setUserSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
+};
+
+export default function AppearanceTab({ userSettings, setUserSettings }: AppearanceTabProps) {
     const { theme, setTheme } = useTheme();
+
+    const toggleCompactLayout = () => {
+        setUserSettings(prev => ({
+            ...prev,
+            compactLayout: !prev.compactLayout
+        }));
+    };
 
     return (
         <Card>
@@ -24,7 +46,7 @@ export default function AppearanceTab() {
                         <Button
                             variant={theme === "light" ? "default" : "outline"}
                             className="flex items-center justify-center gap-2 h-20"
-                            aria-label="Botão selecionar tema, este é ligth"
+                            aria-label="Botão selecionar tema claro"
                             onClick={() => setTheme("light")}
                         >
                             <Sun className="h-5 w-5" />
@@ -33,7 +55,7 @@ export default function AppearanceTab() {
                         <Button
                             variant={theme === "dark" ? "default" : "outline"}
                             className="flex items-center justify-center gap-2 h-20"
-                            aria-label="Botão selecionar tema, este é dark"
+                            aria-label="Botão selecionar tema escuro"
                             onClick={() => setTheme("dark")}
                         >
                             <Moon className="h-5 w-5" />
@@ -42,7 +64,7 @@ export default function AppearanceTab() {
                         <Button
                             variant={theme === "system" ? "default" : "outline"}
                             className="flex items-center justify-center gap-2 h-20"
-                            aria-label="Botão selecionar tema, este é sistema"
+                            aria-label="Botão selecionar tema do sistema"
                             onClick={() => setTheme("system")}
                         >
                             <Monitor className="h-5 w-5" />
@@ -62,7 +84,10 @@ export default function AppearanceTab() {
                                 Reduz o espaçamento e tamanho dos elementos
                             </p>
                         </div>
-                        <Switch />
+                        <Switch
+                            checked={userSettings.compactLayout || false}
+                            onCheckedChange={toggleCompactLayout}
+                        />
                     </div>
                 </div>
             </CardContent>

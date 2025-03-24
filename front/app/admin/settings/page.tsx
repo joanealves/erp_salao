@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { toast, Toaster } from "sonner";
-import { Save, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "../../components/layout/AdminLayout";
@@ -51,7 +50,10 @@ export default function SettingsPage() {
                     </TabsList>
 
                     <TabsContent value="appearance">
-                        <AppearanceTab />
+                        <AppearanceTab
+                            userSettings={userSettings}
+                            setUserSettings={setUserSettings}
+                        />
                     </TabsContent>
 
                     <TabsContent value="notifications">
@@ -62,7 +64,10 @@ export default function SettingsPage() {
                     </TabsContent>
 
                     <TabsContent value="account">
-                        <AccountTab />
+                        <AccountTab
+                            userSettings={userSettings}
+                            setUserSettings={setUserSettings}
+                        />
                     </TabsContent>
 
                     <TabsContent value="system">
