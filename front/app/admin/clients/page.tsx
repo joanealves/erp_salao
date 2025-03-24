@@ -118,7 +118,6 @@ export default function ClientsPage() {
         return isValid;
     };
 
-    // Handlers de ações
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setNewClient(prev => ({ ...prev, [name]: value }));
