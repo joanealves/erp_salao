@@ -28,21 +28,18 @@ type Client = {
 };
 
 export default function ClientsPage() {
-    // Estados principais
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    // Estados para modais
     const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
-    // Estado para novo cliente
     const [newClient, setNewClient] = useState({
         name: "",
         phone: "",
@@ -54,7 +51,6 @@ export default function ClientsPage() {
         email: ""
     });
 
-    // Buscar clientes
     const fetchClients = async () => {
         try {
             setLoading(true);
@@ -78,12 +74,10 @@ export default function ClientsPage() {
         }
     };
 
-    // Efeitos
     useEffect(() => {
         fetchClients();
     }, [page]);
 
-    // Debounce para busca
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery) {
@@ -97,7 +91,6 @@ export default function ClientsPage() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // Validação de formulário
     const validateForm = () => {
         let isValid = true;
         const errors = {
@@ -176,7 +169,6 @@ export default function ClientsPage() {
         fetchClients();
     };
 
-    // Funções para ações da tabela
     const handleViewDetails = (client: Client) => {
         setSelectedClient(client);
         setIsDetailsModalOpen(true);
@@ -210,7 +202,6 @@ export default function ClientsPage() {
         setIsNewAppointmentModalOpen(true);
     };
 
-    // Utilitário para formatar data
     const formatDate = (dateStr: string) => {
         if (!dateStr) return "Nunca";
         try {
