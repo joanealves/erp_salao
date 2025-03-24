@@ -138,9 +138,8 @@ def update(table, record_id, data):
     params = list(data.values())
     params.append(record_id)
 
-    execute_query(query, params, fetch=False)
+    result = execute_query(query, params, fetch=False)
     return select_by_id(table, record_id)
-
 
 def delete(table, record_id):
     """Remove um registro"""

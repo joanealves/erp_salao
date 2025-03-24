@@ -13,7 +13,6 @@ async def get_clients(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100)
 ):
-    # Calcular offset para paginação
     offset = (page - 1) * limit
     
     base_query = "FROM clients"
@@ -35,9 +34,7 @@ async def get_clients(
     items_params = params + [limit, offset]
     items = db.execute_raw(items_query, items_params) or []
     
-    # Formatar dados de visitas para cada cliente
     for item in items:
-        # Converter datas para string ISO para serialização JSON adequada
         if 'created_at' in item and item['created_at']:
             item['created_at'] = item['created_at'].isoformat()
         if 'last_visit' in item and item['last_visit']:
@@ -108,4 +105,81 @@ async def create_client(client: ClientCreate):
         raise HTTPException(
             status_code=500, 
             detail=f"Erro ao criar cliente: {str(e)}"
+        )
+    
+@router.put("/{client_id}", response_model=ClientResponse)
+async def update_client(client_id: int, client: ClientCreate):
+    try:
+        if len(client.name.strip()) < 3:
+            raise HTTPException(
+                status_code=422, 
+                detail=[{
+                    "loc": ["body", "name"], 
+                    "msg": "Nome deve ter pelo menos 3 caracteres"
+                }]
+            )
+
+        if len(client.phone.strip()) < 8:
+            raise HTTPException(
+                status_code=422, 
+                detail=[{
+                    "loc": ["body", "phone"], 
+                    "msg": "Telefone deve ter pelo menos 8 caracteres"
+                }]
+            )
+
+        existing_client = db.select_by_id("clients", client_id)
+        if not existing_client:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+        update_data = {
+            "name": client.name.strip(),
+            "phone": client.phone.strip(),
+            "email": client.email.strip() if client.email else None
+        }
+
+        result = db.update("clients", client_id, update_data)
+        
+        if not result:
+            raise HTTPException(
+                status_code=500, 
+                detail="Falha ao atualizar cliente"
+            )
+
+        if result.get('created_at'):
+            result['created_at'] = result['created_at'].isoformat()
+        if result.get('last_visit'):
+            result['last_visit'] = result['last_visit'].isoformat()
+
+        return result
+
+    except Exception as e:
+        print("Erro ao atualizar cliente:", str(e))
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro ao atualizar cliente: {str(e)}"
+        )
+
+@router.delete("/{client_id}")
+async def delete_client(client_id: int):
+    try:
+        existing_client = db.select_by_id("clients", client_id)
+        if not existing_client:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+        delete_result = db.delete("clients", client_id)
+        
+        if not delete_result or delete_result.get('affected_rows', 0) == 0:
+            raise HTTPException(
+                status_code=500, 
+                detail="Falha ao excluir cliente"
+            )
+
+        return {"message": "Cliente excluído com sucesso"}
+
+    except Exception as e:
+        print("Erro ao excluir cliente:", str(e))
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro ao excluir cliente: {str(e)}"
         )
