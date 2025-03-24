@@ -6,8 +6,9 @@ import { Providers } from "./providers";
 const roboto = Roboto({
   variable: "--font-roboto",
   weight: ["400", "500", "700"],
-  subsets: ["latin"],
+  subsets: ['latin', 'greek'],
   display: "swap",
+  preload: true,
 });
 
 const ubuntu = Ubuntu({
@@ -53,11 +54,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body
-        className={`${roboto.variable} ${ubuntu.variable} ${firaCode.variable} font-sans antialiased`}
-      >
-        <Providers>{children}</Providers>
+    <html lang="pt-BR">
+      <body className={`${roboto.variable} ${ubuntu.variable} ${firaCode.variable} font-sans antialiased`}>
+        {children}
       </body>
     </html>
   );

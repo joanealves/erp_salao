@@ -130,7 +130,7 @@ export default function ClientsPage() {
             const clientData = {
                 name: newClient.name.trim(),
                 phone: newClient.phone.trim(),
-                email: newClient.email.trim() || null 
+                email: newClient.email.trim() || null
             };
 
             const response = await axios.post(`${API_URL}/clients`, clientData, {
