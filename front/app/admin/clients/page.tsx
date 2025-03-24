@@ -5,7 +5,15 @@ import axios from "axios";
 import AdminLayout from "../../components/layout/AdminLayout";
 import { toast, Toaster } from "sonner";
 
-import { ClientsHeader, ClientsSearch, ClientsTable, NewClientModal } from "../../components/clients";
+import {
+    ClientsHeader,
+    ClientsSearch,
+    ClientsTable,
+    NewClientModal
+} from "../../components/clients";
+import DetailsClientModal from "../../components/clients/DetailsClientModal";
+import EditClientModal from "../../components/clients/EditClientModal";
+import NewAppointmentModal from "../../components/NewAppointmentModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -20,12 +28,21 @@ type Client = {
 };
 
 export default function ClientsPage() {
+    // Estados principais
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Estados para modais
     const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false);
+    const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+    // Estado para novo cliente
     const [newClient, setNewClient] = useState({
         name: "",
         phone: "",
@@ -37,6 +54,7 @@ export default function ClientsPage() {
         email: ""
     });
 
+    // Buscar clientes
     const fetchClients = async () => {
         try {
             setLoading(true);
@@ -44,17 +62,15 @@ export default function ClientsPage() {
             if (searchQuery) {
                 url += `&search=${encodeURIComponent(searchQuery)}`;
             }
+
             const response = await axios.get(url);
-            if (response.data && response.data.items) {
-                setClients(response.data.items);
-                setTotalPages(response.data.total_pages || 1);
-            } else {
-                setClients([]);
-                setTotalPages(1);
-            }
+            const { items, total_pages } = response.data;
+
+            setClients(items || []);
+            setTotalPages(total_pages || 1);
         } catch (error) {
-            console.error("Error fetching clients:", error);
-            toast.error("Erro ao carregar clientes");
+            console.error("Erro ao buscar clientes:", error);
+            toast.error("Não foi possível carregar os clientes");
             setClients([]);
             setTotalPages(1);
         } finally {
@@ -62,10 +78,12 @@ export default function ClientsPage() {
         }
     };
 
+    // Efeitos
     useEffect(() => {
         fetchClients();
     }, [page]);
 
+    // Debounce para busca
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery) {
@@ -79,11 +97,7 @@ export default function ClientsPage() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchClients();
-    };
-
+    // Validação de formulário
     const validateForm = () => {
         let isValid = true;
         const errors = {
@@ -102,7 +116,7 @@ export default function ClientsPage() {
             isValid = false;
         }
 
-        if (newClient.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(newClient.email)) {
+        if (newClient.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newClient.email)) {
             errors.email = "Email inválido";
             isValid = false;
         }
@@ -111,6 +125,7 @@ export default function ClientsPage() {
         return isValid;
     };
 
+    // Handlers de ações
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setNewClient(prev => ({ ...prev, [name]: value }));
@@ -121,78 +136,88 @@ export default function ClientsPage() {
     };
 
     const handleCreateClient = async () => {
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
         try {
-            setLoading(true);
             const clientData = {
                 name: newClient.name.trim(),
                 phone: newClient.phone.trim(),
-                email: newClient.email.trim() || null
+                email: newClient.email ? newClient.email.trim() : null
             };
 
-            const response = await axios.post(`${API_URL}/clients`, clientData, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            await axios.post(`${API_URL}/clients`, clientData);
 
             toast.success("Cliente criado com sucesso");
             setIsNewClientModalOpen(false);
             setNewClient({ name: "", phone: "", email: "" });
-            setFormErrors({ name: "", phone: "", email: "" });
             fetchClients();
         } catch (error: any) {
-            console.error("Error creating client:", error);
+            if (error.response?.status === 422) {
+                const apiErrors = error.response.data;
+                const newErrors = { name: "", phone: "", email: "" };
 
-            if (error.response) {
-                const status = error.response.status;
-
-                if (status === 422 && error.response.data.detail) {
-                    const apiErrors = error.response.data.detail;
-
-                    const newErrors = { name: "", phone: "", email: "" };
-                    if (Array.isArray(apiErrors)) {
-                        apiErrors.forEach((err: any) => {
-                            if (err.loc && err.loc.length > 1) {
-                                const field = err.loc[1];
-                                if (field in newErrors) {
-                                    newErrors[field as keyof typeof newErrors] = err.msg;
-                                }
-                            }
-                        });
+                apiErrors.forEach((err: any) => {
+                    const field = err.loc[1];
+                    if (field in newErrors) {
+                        newErrors[field as keyof typeof newErrors] = err.msg;
                     }
+                });
 
-                    setFormErrors(newErrors);
-                    toast.error("Verifique os dados do formulário");
-                } else if (status === 500) {
-                    toast.error("Erro no servidor. Tente novamente mais tarde.");
-                } else {
-                    toast.error(`Erro ao criar cliente: ${error.response.data?.detail || "Erro desconhecido"}`);
-                }
-            } else if (error.request) {
-                toast.error("Servidor indisponível. Verifique sua conexão.");
+                setFormErrors(newErrors);
+                toast.error("Verifique os dados do formulário");
             } else {
-                toast.error("Erro ao enviar requisição.");
+                toast.error("Erro ao criar cliente");
             }
+        }
+    };
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchClients();
+    };
+
+    // Funções para ações da tabela
+    const handleViewDetails = (client: Client) => {
+        setSelectedClient(client);
+        setIsDetailsModalOpen(true);
+    };
+
+    const handleEditClient = (client: Client) => {
+        setSelectedClient(client);
+        setIsEditModalOpen(true);
+    };
+
+    const handleDeleteClient = async (clientId: number) => {
+        try {
+            const confirmDelete = window.confirm("Tem certeza que deseja excluir este cliente?");
+            if (!confirmDelete) return;
+
+            setLoading(true);
+            await axios.delete(`${API_URL}/clients/${clientId}`);
+
+            toast.success("Cliente excluído com sucesso");
+            fetchClients();
+        } catch (error) {
+            console.error("Erro ao excluir cliente:", error);
+            toast.error("Não foi possível excluir o cliente");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleNewSchedule = (client: Client) => {
+        setSelectedClient(client);
+        setIsNewAppointmentModalOpen(true);
+    };
+
+    // Utilitário para formatar data
     const formatDate = (dateStr: string) => {
         if (!dateStr) return "Nunca";
         try {
-            if (dateStr.includes('T')) {
-                const date = new Date(dateStr);
-                return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-            }
-            const [year, month, day] = dateStr.split('-');
-            return `${day}/${month}/${year}`;
+            const date = new Date(dateStr);
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
         } catch (error) {
-            console.error("Error formatting date:", error);
+            console.error("Erro ao formatar data:", error);
             return "Data inválida";
         }
     };
@@ -215,6 +240,10 @@ export default function ClientsPage() {
                     totalPages={totalPages}
                     onPageChange={setPage}
                     formatDate={formatDate}
+                    onViewDetails={handleViewDetails}
+                    onEditClient={handleEditClient}
+                    onDeleteClient={handleDeleteClient}
+                    onNewSchedule={handleNewSchedule}
                 />
 
                 <NewClientModal
@@ -226,6 +255,36 @@ export default function ClientsPage() {
                     onInputChange={handleInputChange}
                     onCreateClient={handleCreateClient}
                 />
+
+                {selectedClient && (
+                    <>
+                        <DetailsClientModal
+                            isOpen={isDetailsModalOpen}
+                            onOpenChange={setIsDetailsModalOpen}
+                            client={selectedClient}
+                            formatDate={formatDate}
+                        />
+
+                        <EditClientModal
+                            isOpen={isEditModalOpen}
+                            onOpenChange={setIsEditModalOpen}
+                            client={{
+                                id: selectedClient.id,
+                                name: selectedClient.name,
+                                phone: selectedClient.phone,
+                                email: selectedClient.email
+                            }}
+                        />
+
+                        <NewAppointmentModal
+                            isOpen={isNewAppointmentModalOpen}
+                            onClose={() => setIsNewAppointmentModalOpen(false)}
+                            onSuccess={() => {
+                                fetchClients();
+                            }}
+                        />
+                    </>
+                )}
 
                 <Toaster position="bottom-right" />
             </div>

@@ -29,6 +29,10 @@ interface ClientsTableProps {
     totalPages: number;
     onPageChange: (page: number) => void;
     formatDate: (dateStr: string) => string;
+    onViewDetails: (client: Client) => void;
+    onEditClient: (client: Client) => void;
+    onDeleteClient: (clientId: number) => void;
+    onNewSchedule: (client: Client) => void;
 }
 
 const ClientsTable: React.FC<ClientsTableProps> = ({
@@ -38,6 +42,10 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
     totalPages,
     onPageChange,
     formatDate,
+    onViewDetails,
+    onEditClient,
+    onDeleteClient,
+    onNewSchedule,
 }) => {
     return (
         <Card>
@@ -75,17 +83,26 @@ const ClientsTable: React.FC<ClientsTableProps> = ({
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => onViewDetails(client)}
+                                            >
                                                 Ver Detalhes
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => onEditClient(client)}
+                                            >
                                                 Editar
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => onNewSchedule(client)}
+                                            >
                                                 Novo Agendamento
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-red-600">
+                                            <DropdownMenuItem
+                                                className="text-red-600"
+                                                onSelect={() => onDeleteClient(client.id)}
+                                            >
                                                 Excluir
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
