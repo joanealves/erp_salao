@@ -22,7 +22,6 @@ import {
     Legend,
     ResponsiveContainer
 } from "recharts";
-// Importando as bibliotecas necessárias para exportação PDF
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
@@ -44,16 +43,13 @@ export default function ReportsPage() {
     const reportRef = useRef(null);
     const [isMobile, setIsMobile] = useState(false);
 
-    // Detecta se é dispositivo móvel
     useEffect(() => {
         const checkIfMobile = () => {
             setIsMobile(window.innerWidth < 768);
         };
 
-        // Verificação inicial
         checkIfMobile();
 
-        // Adiciona event listener para redimensionamento
         window.addEventListener("resize", checkIfMobile);
 
         // Cleanup
@@ -144,25 +140,21 @@ export default function ReportsPage() {
 
                 // Capturar o elemento como imagem
                 const canvas = await html2canvas(reportRef.current, {
-                    scale: 2, // Melhor qualidade
-                    useCORS: true, // Para permitir imagens de outros domínios se houver
-                    logging: false // Desativar logs para produção
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false 
                 });
 
                 const imgData = canvas.toDataURL('image/png');
 
-                // Inicializar o PDF no formato A4
                 const pdf = new jsPDF('p', 'mm', 'a4');
 
-                // Obter dimensões para manter proporção
                 const imgProps = pdf.getImageProperties(imgData);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-                // Adicionar a imagem ao PDF
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-                // Salvar o PDF
                 pdf.save(`relatorio_${reportType}_${timeFrame}.pdf`);
             }
         } catch (error) {
