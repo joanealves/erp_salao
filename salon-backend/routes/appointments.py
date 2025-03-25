@@ -198,13 +198,14 @@ async def create_appointment(appointment: AppointmentCreate):
     except Exception as e:
         print(f"Error creating appointment: {str(e)}")
         print(traceback.format_exc())  
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail=f"Falha ao criar agendamento: {str(e)}"
-    )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create appointment: {str(e)}"
+        )@router.put("/{appointment_id}", response_model=Appointment)
     
 @router.put("/{appointment_id}", response_model=Appointment)
 async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
+    # Método correto
     existing = select_by_id("appointments", appointment_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Appointment not found")
