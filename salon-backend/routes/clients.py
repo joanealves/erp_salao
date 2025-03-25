@@ -1,9 +1,10 @@
-# routes/clients.py
 from fastapi import APIRouter, HTTPException, status, Query
 from typing import List, Optional, Dict, Any
 import math
 import database as db
 from models.client import Client, ClientCreate, ClientResponse, PaginatedResponse
+import re
+import traceback
 
 router = APIRouter()
 
@@ -64,11 +65,35 @@ async def get_client(client_id: int):
 @router.post("/", response_model=ClientResponse)
 async def create_client(client: ClientCreate):
     try:
+        print("Received client data:", {
+            "name": client.name,
+            "phone": client.phone,
+            "email": client.email
+        })
+
         client_data = {
             "name": client.name.strip(),
             "phone": client.phone.strip(),
             "email": client.email.strip() if client.email else None
         }
+
+        if not client_data["name"]:
+            raise HTTPException(
+                status_code=422, 
+                detail=[{
+                    "loc": ["body", "name"], 
+                    "msg": "Nome é obrigatório"
+                }]
+            )
+
+        if not client_data["phone"]:
+            raise HTTPException(
+                status_code=422, 
+                detail=[{
+                    "loc": ["body", "phone"], 
+                    "msg": "Telefone é obrigatório"
+                }]
+            )
 
         if len(client_data["name"]) < 3:
             raise HTTPException(
@@ -88,11 +113,24 @@ async def create_client(client: ClientCreate):
                 }]
             )
 
+        if client_data["email"] and not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", client_data["email"]):
+            raise HTTPException(
+                status_code=422, 
+                detail=[{
+                    "loc": ["body", "email"], 
+                    "msg": "Email inválido"
+                }]
+            )
+
+        print("Prepared client data:", client_data)
+
         result = db.insert("clients", client_data)
+        
         if not result:
+            print("Database insertion failed")
             raise HTTPException(
                 status_code=500, 
-                detail="Falha ao criar cliente"
+                detail="Falha ao criar cliente: Inserção no banco de dados falhou"
             )
 
         if result.get('created_at'):
@@ -101,7 +139,8 @@ async def create_client(client: ClientCreate):
         return result
 
     except Exception as e:
-        print("Erro ao criar cliente:", str(e))
+        print(f"Full error details: {type(e).__name__}: {str(e)}")
+        print(f"Error traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500, 
             detail=f"Erro ao criar cliente: {str(e)}"
