@@ -24,11 +24,14 @@ const firaCode = Fira_Code({
   display: "swap",
 });
 
+export const viewport = {
+  themeColor: "#ffffff",
+};
+
 export const metadata: Metadata = {
   title: "Salon management",
   description: "O melhor gestor de salões",
   manifest: "/manifest.json",
-  themeColor: "#ffffff",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
