@@ -31,6 +31,19 @@ export interface AppointmentCreatePayload {
   status?: string;
 }
 
+export interface ReportData {
+  name: string;
+  valor: number;
+}
+
+export interface ReportSummary {
+  total: number;
+  growth_rate: number;
+  avg_value: number;
+  occupation_rate: number;
+}
+
+
 export async function fetchServices(): Promise<Service[]> {
   try {
     const response = await axios.get(`${API_URL}/services/`);
@@ -97,5 +110,40 @@ export async function createAppointment(
       console.error("Status do erro:", error.response.status);
     }
     throw error; // Re-throw the error so it can be handled by the component
+  }
+}
+
+export async function fetchReportData(
+  reportType: string,
+  timeFrame: string
+): Promise<ReportData[]> {
+  try {
+    const response = await axios.get(`${API_URL}/reports/${reportType}`, {
+      params: { time_frame: timeFrame }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao buscar dados do relatório ${reportType}:`, error);
+    return [];
+  }
+}
+
+export async function fetchReportSummary(
+  reportType: string,
+  timeFrame: string
+): Promise<ReportSummary> {
+  try {
+    const response = await axios.get(`${API_URL}/reports/summary`, {
+      params: { report_type: reportType, time_frame: timeFrame }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar resumo do relatório:", error);
+    return {
+      total: 0,
+      growth_rate: 0,
+      avg_value: 0,
+      occupation_rate: 0
+    };
   }
 }
