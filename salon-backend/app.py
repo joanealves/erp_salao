@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from routes import appointments, services, clients, stats
+from routes import appointments, services, clients, stats, reports
 
 import os
 
@@ -25,6 +25,7 @@ app.include_router(appointments.router, prefix="/appointments", tags=["appointme
 app.include_router(services.router, prefix="/services", tags=["services"])
 app.include_router(clients.router, prefix="/clients", tags=["clients"])
 app.include_router(stats.router, prefix="/stats", tags=["stats"])
+app.include_router(reports.router, prefix="/reports")
 
 @app.get("/")
 async def read_root():
