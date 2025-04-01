@@ -137,13 +137,14 @@ export default function ClientsPage() {
                 email: newClient.email ? newClient.email.trim() : null
             };
 
-            await axios.post(`${API_URL}/clients`, clientData);
+            await axios.post(`${API_URL}/clients/`, clientData);
 
             toast.success("Cliente criado com sucesso");
             setIsNewClientModalOpen(false);
             setNewClient({ name: "", phone: "", email: "" });
             fetchClients();
         } catch (error: any) {
+
             if (error.response?.status === 422) {
                 const apiErrors = error.response.data;
                 const newErrors = { name: "", phone: "", email: "" };
