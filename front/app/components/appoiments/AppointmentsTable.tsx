@@ -1,7 +1,8 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreVertical, MessageSquare, Check, X, Clock, UserCheck } from "lucide-react";
+import { MoreVertical, Clock, Check, X, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
     DropdownMenu,
@@ -13,7 +14,6 @@ import {
 import { Appointment, AppointmentStatus } from "../../types/appointment";
 import { formatDate, getStatusBadge } from "../../../lib/utils/appoiment";
 import { useState } from "react";
-import axios from "axios";
 
 interface AppointmentsTableProps {
     appointments: Appointment[];
@@ -23,8 +23,6 @@ interface AppointmentsTableProps {
     onRefresh: () => void;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function AppointmentsTable({
     appointments,
     loading,
@@ -32,47 +30,14 @@ export default function AppointmentsTable({
     onUpdateStatus,
     onRefresh,
 }: AppointmentsTableProps) {
-    const [sendingSMS, setSendingSMS] = useState<Record<number, boolean>>({});
     const [updatingStatus, setUpdatingStatus] = useState<Record<number, boolean>>({});
 
-    // Função para enviar SMS para o cliente
-    const handleSendSMS = async (appointment: Appointment) => {
-        try {
-            setSendingSMS(prev => ({ ...prev, [appointment.id]: true }));
-
-            // Simulando uma chamada de API para envio de SMS
-            // Em produção, você conectaria com seu serviço de SMS
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Registro do envio de SMS
-            await axios.post(`${API_URL}/appointments/${appointment.id}/notifications`, {
-                type: "sms",
-                phone: appointment.phone,
-                message: `Olá ${appointment.name}, confirmamos seu agendamento de ${appointment.service} para ${formatDate(appointment.date)} às ${appointment.time}.`
-            });
-
-            toast.success(`SMS enviado para ${appointment.phone} com sucesso!`, {
-                description: `Notificação enviada para ${appointment.name}`
-            });
-        } catch (error) {
-            console.error("Erro ao enviar SMS:", error);
-            toast.error("Falha ao enviar SMS", {
-                description: "Verifique a conexão e tente novamente."
-            });
-        } finally {
-            setSendingSMS(prev => ({ ...prev, [appointment.id]: false }));
-        }
-    };
-
-    // Função para atualizar o status do agendamento com confirmação
     const handleUpdateStatus = async (id: number, newStatus: AppointmentStatus, appointment: Appointment) => {
         try {
             setUpdatingStatus(prev => ({ ...prev, [id]: true }));
 
-            // Atualização do status via API
             await onUpdateStatus(id, newStatus);
 
-            // Mensagens específicas para cada tipo de atualização
             if (newStatus === "confirmed") {
                 toast.success(`Agendamento confirmado`, {
                     description: `${appointment.service} para ${appointment.name} foi confirmado.`
@@ -87,7 +52,6 @@ export default function AppointmentsTable({
                 });
             }
 
-            // Atualiza a lista de agendamentos
             onRefresh();
         } catch (error) {
             console.error(`Erro ao atualizar status para ${newStatus}:`, error);
@@ -143,18 +107,10 @@ export default function AppointmentsTable({
                                             Ver Detalhes
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem
-                                            onClick={() => handleSendSMS(appt)}
-                                            disabled={sendingSMS[appt.id]}
-                                        >
-                                            <MessageSquare className="mr-2 h-4 w-4" />
-                                            {sendingSMS[appt.id] ? 'Enviando...' : 'Enviar SMS'}
-                                        </DropdownMenuItem>
-
                                         <DropdownMenuSeparator />
 
-                                        {/* Opções de atualização de status condicionais */}
-                                        {appt.status !== "confirmed" && appt.status !== "completed" && (
+                                        {/* Opção de confirmar - mostrada apenas para pendentes */}
+                                        {appt.status === "pending" && (
                                             <DropdownMenuItem
                                                 onClick={() => handleUpdateStatus(appt.id, "confirmed", appt)}
                                                 disabled={updatingStatus[appt.id]}
@@ -164,7 +120,8 @@ export default function AppointmentsTable({
                                             </DropdownMenuItem>
                                         )}
 
-                                        {appt.status !== "completed" && appt.status !== "canceled" && (
+                                        {/* Opção de marcar como concluído - mostrada para pendentes e confirmados */}
+                                        {(appt.status === "pending" || appt.status === "confirmed") && (
                                             <DropdownMenuItem
                                                 onClick={() => handleUpdateStatus(appt.id, "completed", appt)}
                                                 disabled={updatingStatus[appt.id]}
@@ -174,6 +131,7 @@ export default function AppointmentsTable({
                                             </DropdownMenuItem>
                                         )}
 
+                                        {/* Opção de cancelar - mostrada para todos exceto já cancelados */}
                                         {appt.status !== "canceled" && (
                                             <DropdownMenuItem
                                                 onClick={() => handleUpdateStatus(appt.id, "canceled", appt)}
