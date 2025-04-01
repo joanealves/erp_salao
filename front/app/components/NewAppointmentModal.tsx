@@ -21,7 +21,8 @@ interface NewAppointmentModalProps {
   onSuccess: () => void;
 }
 
-const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClose, onSuccess }) => {
+// Modificando a exportação para garantir compatibilidade
+const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModalProps) => {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<string>("");
   const [date, setDate] = useState<string>("");
@@ -80,8 +81,8 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
         date,
         time,
         name,
-        phone: cleanedPhone,  // Send phone without formatting
-        client_id: clientId,  // Explicitly null or a number
+        phone: cleanedPhone,  
+        client_id: clientId,  
       };
 
       console.log("Dados enviados:", appointmentData);
@@ -156,89 +157,71 @@ const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({ isOpen, onClo
         <div className="space-y-5">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Serviço *</label>
-            <div className="relative">
-              <Select value={selectedService} onValueChange={setSelectedService}>
-                <SelectTrigger className="w-full pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors">
-                  <SelectValue placeholder="Selecione um serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Scissors className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            </div>
+            <Select value={selectedService} onValueChange={setSelectedService}>
+              <SelectTrigger className="w-full h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors">
+                <SelectValue placeholder="Selecione um serviço" />
+              </SelectTrigger>
+              <SelectContent>
+                {services.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Data *</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
+              <Input
+                className="h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Horário *</label>
-              <div className="relative">
-                <Clock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
-              </div>
+              <Input
+                className="h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Nome Completo *</label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <Input
-                className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                type="text"
-                placeholder="Seu nome completo"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+            <Input
+              className="h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+              type="text"
+              placeholder="Seu nome completo"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Telefone *</label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <Input
-                className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                type="tel"
-                placeholder="(00) 00000-0000"
-                value={phone}
-                onChange={handlePhoneChange}
-              />
-            </div>
+            <Input
+              className="h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+              type="tel"
+              placeholder="(00) 00000-0000"
+              value={phone}
+              onChange={handlePhoneChange}
+            />
           </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Email (opcional)</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <Input
-                className="pl-10 h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+            <Input
+              className="h-12 rounded-lg border-gray-300 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
           <DialogFooter>

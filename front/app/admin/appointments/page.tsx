@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Toaster } from "sonner";
 
@@ -148,47 +148,69 @@ export default function AppointmentsPage() {
           onSearchSubmit={handleSearchSubmit}
         />
 
-        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)}>
-          <div className="flex justify-end mb-4">
-            <TabsList>
-              <TabsTrigger value="table">Tabela</TabsTrigger>
-              <TabsTrigger value="calendar">Calendário</TabsTrigger>
-            </TabsList>
-          </div>
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value)} className="w-full">
+            <div className="border-b px-6 py-3 flex justify-between items-center">
+              <h2 className="text-lg font-medium">Visualização</h2>
+              <TabsList className="bg-slate-100 dark:bg-slate-800">
+                <TabsTrigger value="table" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  Tabela
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
+                  Calendário
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-          <TabsContent value="table">
-            <Card>
-              <AppointmentsTable
-                appointments={appointments}
-                loading={loading}
-                onViewDetails={openAppointmentDetails}
-                onUpdateStatus={updateStatus}
-                onRefresh={handleRefresh}
-              />
-            </Card>
+            <TabsContent value="table" className="pt-0 m-0">
+              <CardContent className="p-0">
+                <AppointmentsTable
+                  appointments={appointments}
+                  loading={loading}
+                  onViewDetails={openAppointmentDetails}
+                  onUpdateStatus={updateStatus}
+                  onRefresh={handleRefresh}
+                />
+              </CardContent>
 
-            <Pagination className="mt-4">
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(page - 1)}
-                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(page + 1)}
-                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </TabsContent>
+              <div className="border-t p-4 bg-slate-50 dark:bg-gray-800/50">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(page - 1)}
+                        className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      const pageNumber = i + 1;
+                      return (
+                        <PaginationItem key={pageNumber}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNumber)}
+                            isActive={pageNumber === page}
+                          >
+                            {pageNumber}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(page + 1)}
+                        className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="calendar">
-            <AdminCalendar initialAppointments={appointments} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="calendar" className="m-0 p-6">
+              <AdminCalendar initialAppointments={appointments} />
+            </TabsContent>
+          </Tabs>
+        </div>
 
         <NewAppointmentModal
           isOpen={isNewAppointmentModalOpen}
