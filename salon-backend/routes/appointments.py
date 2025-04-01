@@ -201,8 +201,9 @@ async def create_appointment(appointment: AppointmentCreate):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create appointment: {str(e)}"
-        )@router.put("/{appointment_id}", response_model=Appointment)
-    
+        )
+
+# Novo endpoint com único decorador
 @router.put("/{appointment_id}", response_model=Appointment)
 async def update_appointment(appointment_id: int, appointment: AppointmentUpdate):
     # Método correto
