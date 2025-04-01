@@ -116,16 +116,24 @@ def select_by_id(table, record_id):
 
 def insert(table, data):
     """Insere um novo registro"""
-    columns = ", ".join(data.keys())
-    placeholders = ", ".join(["%s"] * len(data))
-    query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
-    
-    result = execute_query(query, tuple(data.values()), fetch=False)
-    
-    if "last_insert_id" in result:
-        return select_by_id(table, result["last_insert_id"])
-    return None
-
+    try:
+        columns = ", ".join(data.keys())
+        placeholders = ", ".join(["%s"] * len(data))
+        query = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+        
+        print(f"Executando query: {query}")
+        print(f"Com valores: {tuple(data.values())}")
+        
+        result = execute_query(query, tuple(data.values()), fetch=False)
+        
+        print(f"Resultado da inserção: {result}")
+        
+        if "last_insert_id" in result:
+            return select_by_id(table, result["last_insert_id"])
+        return None
+    except Exception as e:
+        print(f"Erro ao inserir no banco de dados: {str(e)}")
+        return None
 
 def update(table, record_id, data):
     """Atualiza um registro existente"""
